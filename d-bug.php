@@ -2,8 +2,8 @@
 
 class D {
 	public static function debugMode() {
-		$headers = function_exists('apache_request_headers') ? apache_request_headers() : $_SERVER;
-		$ip = isset($headers['X-Forwarded-For']) ? $headers['X-Forwarded-For'] : $headers['REMOTE_ADDR'];
+		$headers = function_exists('apache_request_headers') ? apache_request_headers() : array();
+		$ip = isset($headers['X-Forwarded-For']) ? $headers['X-Forwarded-For'] : $_SERVER['REMOTE_ADDR'];
 		
 		return $ip == '127.0.0.1' || preg_match('/^192\.168\./S', $ip);
 	}
