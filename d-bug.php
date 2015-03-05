@@ -55,9 +55,13 @@ class D {
 			exit;
 	}
 	
-	//dump a variable, and provide type info
-	//recurses one level into arrays and objects
-	//provides extended info about methods and properties
+	/**
+	 * dump a variable, and provide type info
+	 * recurses one level into arrays and objects
+	 * provides extended info about methods and properties
+	 * 
+	 * TODO: eliminate redundant code by adding an optional recursion depth parameter
+	 */
 	public static function bugType($var, $exit = true) {
 		if(!self::bugMode())
 			return;
@@ -95,6 +99,7 @@ class D {
 			echo '(' . gettype($var) . ")\n\n";
 			
 			$class = get_class($var);
+			$reflectionClass = new ReflectionClass($class);
 			echo 'Class: ' . $class, "\n\n";
 			
 			echo "Ancestors:\n";
@@ -107,9 +112,56 @@ class D {
 					break;
 			}
 			
+			//output a list of constants
+			echo "\nConstants:\n";
+			$constants = $reflectionClass->getConstants();
+			if($constants) {
+				foreach($constants as $k => $v) {
+					$type = gettype($v);
+					echo "\t";
+					echo $k, ' = (';
+					if(in_array($type, array('array', 'resource', 'unknown', 'NULL')))
+						echo $type, ")\n";
+					elseif($type == 'object')
+						echo 'object ', get_class($v) . ")\n";
+					elseif($type == 'boolean')
+						echo $type . ') ' . ($v ? 'true' : 'false'), "\n";
+					else
+						echo $type . ') ' . $v, "\n";
+				}
+			}
+			else
+				echo "\tNo constants\n";
+			
+			//output a list of properties
+			echo "\nProperties:\n";
+			$properties = $reflectionClass->getProperties();
+			if($properties) {
+				foreach($properties as $property) {
+					$property->setAccessible(true);
+					$k = $property->getName();
+					$v = $property->getValue($var);
+					
+					$type = gettype($v);
+					echo "\t", self::_getVisibility($property), ' ';
+					if($property->isStatic())
+						echo 'static ';
+					echo '$', $k, ' = (';
+					if(in_array($type, array('array', 'resource', 'unknown', 'NULL')))
+						echo $type, ")\n";
+					elseif($type == 'object')
+						echo 'object ', get_class($v) . ")\n";
+					elseif($type == 'boolean')
+						echo $type . ') ' . ($v ? 'true' : 'false'), "\n";
+					else
+						echo $type . ') ' . $v, "\n";
+				}
+			}
+			else
+				echo "\tNo properties\n";
+			
 			//output a list of methods
 			echo "\nMethods:\n";
-			$reflectionClass = new ReflectionClass($class);
 			$methods = $reflectionClass->getMethods();
 			if($methods) {
 				foreach($methods as $method) {
@@ -127,30 +179,6 @@ class D {
 			}
 			else
 				echo "\tNo methods\n";
-			echo "\nVars:\n";
-			
-			//output a list of properties
-			$properties = $reflectionClass->getProperties();
-			$pretty = array();
-			foreach($properties as $property) {
-				$property->setAccessible(true);
-				$k = $property->getName();
-				$v = $property->getValue($var);
-				
-				$type = gettype($v);
-				echo "\t", self::_getVisibility($property), ' ';
-				if($property->isStatic())
-					echo 'static ';
-				echo '$', $k, ' = (';
-				if(in_array($type, array('array', 'resource', 'unknown', 'NULL')))
-					echo $type, ")\n";
-				elseif($type == 'object')
-					echo 'object ', get_class($v) . ")\n";
-				elseif($type == 'boolean')
-					echo $type . ') ' . ($v ? 'true' : 'false'), "\n";
-				else
-					echo $type . ') ' . $v, "\n";
-			}
 		}
 		
 		if(self::bugWeb())
