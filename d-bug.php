@@ -1,45 +1,64 @@
 <?php
 
 class D {
-	public static function debugMode() {
+	public static function bugMode() {
+		if(!self::bugWeb())
+			return true;
+		
 		$headers = function_exists('apache_request_headers') ? apache_request_headers() : array();
 		$ip = isset($headers['X-Forwarded-For']) ? $headers['X-Forwarded-For'] : $_SERVER['REMOTE_ADDR'];
 		
 		return $ip == '127.0.0.1' || preg_match('/^192\.168\./S', $ip);
 	}
 	
+	public static function bugWeb() {
+		return php_sapi_name() != 'cli';
+	}
+	
 	public static function bug($var, $dump = false, $exit = true) {
-		if(!self::debugMode())
+		if(!self::bugMode())
 			return;
 		
-		echo '<pre>';
+		if(self::bugWeb())
+			echo '<pre>';
+		
 		if($dump)
 			var_dump($var);
 		else
 			print_r($var);
-		echo "</pre>\n";
+		
+		if(self::bugWeb())
+			echo "</pre>";
+		echo "\n";
 		
 		if($exit)
 			exit;
 	}
 	
 	public static function backtrace($exit = true) {
-		if(!self::debugMode())
+		if(!self::bugMode())
 			return;
 		
-		echo '<pre>';
+		if(self::bugWeb())
+			echo '<pre>';
+		
 		debug_print_backtrace();
-		echo "</pre>\n";
+		
+		if(self::bugWeb())
+			echo "</pre>\n";
 		
 		if($exit)
 			exit;
 	}
 	
 	public static function bugType($var, $exit = true) {
-		if(!self::debugMode())
+		if(!self::bugMode())
 			return;
 		
-		echo "<pre>\n";
+		
+		if(self::bugWeb())
+			echo "<pre>\n";
+		
 		if(!array(gettype($var), array('resource', 'unknown', 'NULL'))) {
 			echo '(' . gettype($var) . ")\n";
 		}
@@ -87,7 +106,10 @@ class D {
 					echo "\t", $k, ' => (' . $type . ') ' . $v, "\n";
 			}
 		}
-		echo "\n</pre>\n";
+		
+		if(self::bugWeb())
+			echo "\n</pre>";
+		echo "\n";
 		
 		if($exit)
 			exit;
