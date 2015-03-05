@@ -57,7 +57,7 @@ class D {
 	
 	//dump a variable, and provide type info
 	//recurses one level into arrays and objects
-	//provides extended info about currently visible methods and properties
+	//provides extended info about methods and properties
 	public static function bugType($var, $exit = true) {
 		if(!self::bugMode())
 			return;
@@ -107,32 +107,33 @@ class D {
 					break;
 			}
 			
-			//output a list of methods that are visible within the current scope
+			//output a list of methods
 			echo "\nMethods:\n";
-			$methods = get_class_methods($var);
+			$reflectionClass = new ReflectionClass($class);
+			$methods = $reflectionClass->getMethods();
 			if($methods) {
 				foreach($methods as $method) {
 					//get a pretty list of parameters for this method
-					$reflection = new ReflectionMethod($class, $method);
-					$params = $reflection->getParameters();
+					$method->setAccessible(true);
+					$params = $method->getParameters();
 					foreach($params as $k => $v)
 						$params[$k] = preg_replace('/(^Parameter #\d+ \[ | \]$)/S', '', $v);
 					
-					echo "\t", self::_getVisibility($reflection), ' ';
-					if($reflection->isStatic())
+					echo "\t", self::_getVisibility($method), ' ';
+					if($method->isStatic())
 						echo 'static ';
-					echo $method, '(', implode(', ', $params), ")\n";
+					echo $method->getName(), '(', implode(', ', $params), ")\n";
 				}
 			}
 			else
 				echo "\tNo methods\n";
 			echo "\nVars:\n";
 			
-			//output a list of properties that are visible within the current scope
-			$reflectionClass = new ReflectionClass($class);
+			//output a list of properties
 			$properties = $reflectionClass->getProperties();
 			$pretty = array();
 			foreach($properties as $property) {
+				$property->setAccessible(true);
 				$k = $property->getName();
 				$v = $property->getValue($var);
 				
@@ -162,6 +163,7 @@ class D {
 	
 	//check reflection object's visibility
 	protected static function _getVisibility($obj) {
+		$obj->setAccessible(true);
 		if($obj->isPublic())
 			return 'public';
 		elseif($obj->isProtected())
