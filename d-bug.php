@@ -68,49 +68,65 @@ class D {
 		if(!array(gettype($var), array('resource', 'unknown', 'NULL'))) {
 			echo '(' . gettype($var) . ")\n";
 		}
-		else if(!in_array(gettype($var), array('object', 'array', 'resource', 'unknown', 'NULL'))) {
+		else if(!in_array(gettype($var), array('object', 'array'))) {
 			if(gettype($var) == 'boolean')
 				echo '(' . gettype($var) . ') ' . ($var ? 'true' : 'false'), "\n";
 			else
 				echo '(' . gettype($var) . ') ' . $var, "\n";
 		}
-		else {
+		else if(gettype($var) == 'array') {
 			echo '(' . gettype($var) . ")\n\n";
-			if(gettype($var) == 'object') {
-				$class = get_class($var);
-				echo 'Class: ' . $class, "\n\n";
-				
-				echo "Ancestors:\n";
-				$ancestorClass = $class;
-				while(true) {
-					$ancestorClass = get_parent_class($ancestorClass);
-					if($ancestorClass)
-						echo "\t", $ancestorClass, "\n";
-					else
-						break;
-				}
-				
-				//output a list of methods that are visible within the current scope
-				echo "\nMethods:\n";
-				$methods = get_class_methods($var);
-				if($methods) {
-					foreach($methods as $method) {
-						//get a pretty list of parameters for this method
-						$reflection = new ReflectionMethod($class, $method);
-						$params = $reflection->getParameters();
-						foreach($params as $k => $v)
-							$params[$k] = preg_replace('/(^Parameter #\d+ \[ | \]$)/S', '', $v);
-						
-						echo "\t", self::_getVisibility($reflection), ' ';
-						if($reflection->isStatic())
-							echo 'static ';
-						echo $method, '(', implode(', ', $params), ")\n";
-					}
-				}
+			
+			foreach($var as $k => $v) {
+				$type = gettype($v);
+				echo "\t";
+				echo $k, ' => (';
+				if(in_array($type, array('array', 'resource', 'unknown', 'NULL')))
+					echo $type, ")\n";
+				elseif($type == 'object')
+					echo 'object ', get_class($v) . ")\n";
+				elseif($type == 'boolean')
+					echo $type . ') ' . ($v ? 'true' : 'false'), "\n";
 				else
-					echo "\tNo methods\n";
-				echo "\nVars:\n";
+					echo $type . ') ' . $v, "\n";
 			}
+		}
+		else if(gettype($var) == 'object') {
+			echo '(' . gettype($var) . ")\n\n";
+			
+			$class = get_class($var);
+			echo 'Class: ' . $class, "\n\n";
+			
+			echo "Ancestors:\n";
+			$ancestorClass = $class;
+			while(true) {
+				$ancestorClass = get_parent_class($ancestorClass);
+				if($ancestorClass)
+					echo "\t", $ancestorClass, "\n";
+				else
+					break;
+			}
+			
+			//output a list of methods that are visible within the current scope
+			echo "\nMethods:\n";
+			$methods = get_class_methods($var);
+			if($methods) {
+				foreach($methods as $method) {
+					//get a pretty list of parameters for this method
+					$reflection = new ReflectionMethod($class, $method);
+					$params = $reflection->getParameters();
+					foreach($params as $k => $v)
+						$params[$k] = preg_replace('/(^Parameter #\d+ \[ | \]$)/S', '', $v);
+					
+					echo "\t", self::_getVisibility($reflection), ' ';
+					if($reflection->isStatic())
+						echo 'static ';
+					echo $method, '(', implode(', ', $params), ")\n";
+				}
+			}
+			else
+				echo "\tNo methods\n";
+			echo "\nVars:\n";
 			
 			//output a list of properties that are visible within the current scope
 			$reflectionClass = new ReflectionClass($class);
@@ -125,9 +141,11 @@ class D {
 				if($property->isStatic())
 					echo 'static ';
 				echo '$', $k, ' = (';
-				if(in_array($type, array('object', 'array', 'resource', 'unknown', 'NULL')))
+				if(in_array($type, array('array', 'resource', 'unknown', 'NULL')))
 					echo $type, ")\n";
-				elseif($type == 'bool')
+				elseif($type == 'object')
+					echo 'object ', get_class($v) . ")\n";
+				elseif($type == 'boolean')
 					echo $type . ') ' . ($v ? 'true' : 'false'), "\n";
 				else
 					echo $type . ') ' . $v, "\n";
