@@ -71,14 +71,17 @@ class D {
 		else {
 			echo '(' . gettype($var) . ")\n\n";
 			if(gettype($var) == 'object') {
-				echo 'Class: ' . get_class($var), "\n\n";
+				//NOTE: lower visibility levels can only be seen within the correct scope
+				
+				$class = get_class($var);
+				echo 'Class: ' . $class, "\n\n";
 				
 				echo "Ancestors:\n";
-				$class = get_class($var);
+				$ancestorClass = $class;
 				while(true) {
-					$class = get_parent_class($class);
-					if($class)
-						echo "\t", $class, "\n";
+					$ancestorClass = get_parent_class($ancestorClass);
+					if($ancestorClass)
+						echo "\t", $ancestorClass, "\n";
 					else
 						break;
 				}
@@ -86,8 +89,27 @@ class D {
 				echo "\nMethods:\n";
 				$methods = get_class_methods($var);
 				if($methods) {
-					foreach($methods as $method)
-						echo "\t", $method, "\n";
+					foreach($methods as $method) {
+						$reflection = new ReflectionMethod($class, $method);
+						
+						//check the method's visibility
+						if($reflection->isPublic())
+							$visibility = 'public';
+						elseif($reflection->isProtected())
+							$visibility = 'protected';
+						else
+							$visibility = 'private';
+						
+						//get a pretty list of parameters for this method
+						$params = $reflection->getParameters();
+						foreach($params as $k => $v)
+							$params[$k] = preg_replace('/(^Parameter #\d+ \[ | \]$)/S', '', $v);
+						
+						echo "\t", $visibility, ' ';
+						if($reflection->isStatic())
+							echo 'static ';
+						echo $method, '(', implode(', ', $params), ")\n";
+					}
 				}
 				else
 					echo "\tNo methods\n";
@@ -99,11 +121,11 @@ class D {
 			foreach($var as $k => $v) {
 				$type = gettype($v);
 				if(in_array($type, array('object', 'array', 'resource', 'unknown', 'NULL')))
-					echo "\t", $k, ' => (', $type, ")\n";
+					echo "\t$", $k, ' = (', $type, ")\n";
 				elseif($type == 'bool')
-					echo "\t", $k, ' => (' . $type . ') ' . ($v ? 'true' : 'false'), "\n";
+					echo "\t$", $k, ' = (' . $type . ') ' . ($v ? 'true' : 'false'), "\n";
 				else
-					echo "\t", $k, ' => (' . $type . ') ' . $v, "\n";
+					echo "\t$", $k, ' = (' . $type . ') ' . $v, "\n";
 			}
 		}
 		
