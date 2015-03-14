@@ -69,21 +69,22 @@ class D {
 		if(self::bugWeb())
 			echo "<pre>\n";
 		
-		if(!array(gettype($var), array('unknown', 'NULL'))) {
-			echo '(' . gettype($var) . ")\n";
+		$type = gettype($var);
+		if(!array($type, array('unknown', 'NULL'))) {
+			echo '(' . $type . ")\n";
 		}
-		else if(!in_array(gettype($var), array('object', 'array'))) {
+		else if(!in_array($type, array('object', 'array'))) {
 			echo self::_bugTypeShort($var), "\n";
 		}
-		else if(gettype($var) == 'array') {
-			echo '(' . gettype($var) . ")\n\n";
+		else if($type == 'array') {
+			echo '(' . $type . ")\n\n";
 			
 			foreach($var as $k => $v) {
 				$type = gettype($v);
 				echo "\t", $k, ' => ', self::_bugTypeShort($v), "\n";
 			}
 		}
-		else if(gettype($var) == 'object') {
+		else if($type == 'object') {
 			$class = get_class($var);
 			$reflectionClass = new ReflectionClass($class);
 			echo self::_bugTypeShort($var), "\n\n";
