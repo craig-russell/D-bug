@@ -1,3 +1,3 @@
 # D-bug
 
-D-bug is a library that makes debugging easier and less error prone.
+D-bug is a library that makes debugging PHP applications easier and less error prone.
