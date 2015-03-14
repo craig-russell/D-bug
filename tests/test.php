@@ -6,7 +6,7 @@ include '../d-bug.php';
 
 class A {}
 
-class B {
+class B extends stdClass {
 	public static function testA() {
 		return false;
 	}

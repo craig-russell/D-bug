@@ -183,8 +183,10 @@ class D {
 	protected static function _bugDeclaration($reflection) {
 		$file = $reflection->getFileName();
 		$line = $reflection->getStartLine();
-		
-		return $line . ':' . $file;
+		if($line !== false)
+			return $line . ':' . $file;
+		else
+			return 'Predefined';
 	}
 	
 	//check reflection object's visibility
