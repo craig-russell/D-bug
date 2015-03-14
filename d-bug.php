@@ -39,7 +39,7 @@ class D {
 	}
 	
 	//generate a backtrace
-	public static function backtrace($exit = true) {
+	public static function bugBacktrace($exit = true) {
 		if(!self::bugMode())
 			return;
 		
@@ -199,7 +199,7 @@ class D {
 	}
 	
 	//dump the php ini settings
-	public static function ini($exit = true) {
+	public static function bugIni($exit = true) {
 		self::bug(ini_get_all(), false, $exit);
 	}
 }
