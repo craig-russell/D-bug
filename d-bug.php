@@ -59,8 +59,6 @@ class D {
 	 * dump a variable, and provide type info
 	 * recurses one level into arrays and objects
 	 * provides extended info about methods and properties
-	 * 
-	 * TODO: eliminate redundant code by adding an optional recursion depth parameter
 	 */
 	public static function bugType($var, $exit = true) {
 		if(!self::bugMode())
