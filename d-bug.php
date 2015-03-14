@@ -202,4 +202,8 @@ class D {
 	public static function bugIni($exit = true) {
 		self::bug(ini_get_all(), false, $exit);
 	}
+	
+	public static function bugIncludes($exit = true) {
+		self::bug(implode("\n", get_included_files()), false, $exit);
+	}
 }
