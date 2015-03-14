@@ -73,61 +73,41 @@ class D {
 			echo '(' . gettype($var) . ")\n";
 		}
 		else if(!in_array(gettype($var), array('object', 'array'))) {
-			if(gettype($var) == 'boolean')
-				echo '(' . gettype($var) . ') ' . ($var ? 'true' : 'false'), "\n";
-			else
-				echo '(' . gettype($var) . ') ' . $var, "\n";
+			echo self::_bugTypeShort($var), "\n";
 		}
 		else if(gettype($var) == 'array') {
 			echo '(' . gettype($var) . ")\n\n";
 			
 			foreach($var as $k => $v) {
 				$type = gettype($v);
-				echo "\t";
-				echo $k, ' => (';
-				if(in_array($type, array('array', 'resource', 'unknown', 'NULL')))
-					echo $type, ")\n";
-				elseif($type == 'object')
-					echo 'object ', get_class($v) . ")\n";
-				elseif($type == 'boolean')
-					echo $type . ') ' . ($v ? 'true' : 'false'), "\n";
-				else
-					echo $type . ') ' . $v, "\n";
+				echo "\t", $k, ' => ', self::_bugTypeShort($v), "\n";
 			}
 		}
 		else if(gettype($var) == 'object') {
-			echo '(' . gettype($var) . ")\n\n";
-			
 			$class = get_class($var);
 			$reflectionClass = new ReflectionClass($class);
-			echo 'Class: ' . $class, "\n\n";
+			echo '(' . gettype($var) . ' ' . $class . ")\n\n";
 			
-			echo "Ancestors:\n";
+			echo "Extends:\n";
 			$ancestorClass = $class;
+			$ancestorCount = 0;
 			while(true) {
 				$ancestorClass = get_parent_class($ancestorClass);
 				if($ancestorClass)
 					echo "\t", $ancestorClass, "\n";
 				else
 					break;
+				++$ancestorCount;
 			}
+			if(!$ancestorCount)
+				echo "\tNo ancestors\n";
 			
 			//output a list of constants
 			echo "\nConstants:\n";
 			$constants = $reflectionClass->getConstants();
 			if($constants) {
 				foreach($constants as $k => $v) {
-					$type = gettype($v);
-					echo "\t";
-					echo $k, ' = (';
-					if(in_array($type, array('array', 'resource', 'unknown', 'NULL')))
-						echo $type, ")\n";
-					elseif($type == 'object')
-						echo 'object ', get_class($v) . ")\n";
-					elseif($type == 'boolean')
-						echo $type . ') ' . ($v ? 'true' : 'false'), "\n";
-					else
-						echo $type . ') ' . $v, "\n";
+					echo "\t", $k, ' = ', self::_bugTypeShort($v), "\n";
 				}
 			}
 			else
@@ -142,19 +122,10 @@ class D {
 					$k = $property->getName();
 					$v = $property->getValue($var);
 					
-					$type = gettype($v);
 					echo "\t", self::_getVisibility($property), ' ';
 					if($property->isStatic())
 						echo 'static ';
-					echo '$', $k, ' = (';
-					if(in_array($type, array('array', 'resource', 'unknown', 'NULL')))
-						echo $type, ")\n";
-					elseif($type == 'object')
-						echo 'object ', get_class($v) . ")\n";
-					elseif($type == 'boolean')
-						echo $type . ') ' . ($v ? 'true' : 'false'), "\n";
-					else
-						echo $type . ') ' . $v, "\n";
+					echo '$', $k, ' = ', self::_bugTypeShort($v), "\n";
 				}
 			}
 			else
@@ -187,6 +158,23 @@ class D {
 		
 		if($exit)
 			exit;
+	}
+	
+	protected static function _bugTypeShort($v) {
+		$type = gettype($v);
+		$out = '(' . $type;
+		if(in_array($type, array('resource', 'unknown', 'NULL')))
+			$out .= ')';
+		elseif($type == 'array')
+			$out .= ' ' . sizeof($v) . ')';
+		elseif($type == 'object')
+			$out .= ' ' . get_class($v) . ')';
+		elseif($type == 'boolean')
+			$out .= ') ' . ($v ? 'true' : 'false');
+		else
+			$out .= ') ' . $v;
+		
+		return $out;
 	}
 	
 	//check reflection object's visibility
