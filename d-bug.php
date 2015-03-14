@@ -93,7 +93,7 @@ class D {
 			while(true) {
 				$ancestorClass = get_parent_class($ancestorClass);
 				if($ancestorClass)
-					echo "\t", $ancestorClass, ' ', self::_bugClassDeclaration($ancestorClass), "\n";
+					echo "\t", $ancestorClass, "\n\t\t", self::_bugDeclaration(new ReflectionClass($ancestorClass)), "\n";
 				else
 					break;
 				++$ancestorCount;
@@ -144,7 +144,7 @@ class D {
 					echo "\t", self::_getVisibility($method), ' ';
 					if($method->isStatic())
 						echo 'static ';
-					echo $method->getName(), '(', implode(', ', $params), ') ', self::_bugMethodDeclaration($method), "\n";
+					echo $method->getName(), '(', implode(', ', $params), ")\n\t\t", self::_bugDeclaration($method), "\n";
 				}
 			}
 			else
@@ -170,7 +170,7 @@ class D {
 			$out .= ' ' . sizeof($v) . ')';
 		elseif($type == 'object') {
 			$class = get_class($v);
-			$out .= ' ' . $class . ') ' . self::_bugClassDeclaration($class);
+			$out .= ' ' . $class . ")\n\t\t" . self::_bugDeclaration(new ReflectionClass($class));
 		}
 		elseif($type == 'boolean')
 			$out .= ') ' . ($v ? 'true' : 'false');
@@ -180,17 +180,9 @@ class D {
 		return $out;
 	}
 	
-	protected static function _bugClassDeclaration($class) {
-		$reflection = new ReflectionClass($class);
+	protected static function _bugDeclaration($reflection) {
 		$file = $reflection->getFileName();
 		$line = $reflection->getStartLine();
-		
-		return $line . ':' . $file;
-	}
-	
-	protected static function _bugMethodDeclaration($reflectionMethod) {
-		$file = $reflectionMethod->getFileName();
-		$line = $reflectionMethod->getStartLine();
 		
 		return $line . ':' . $file;
 	}
