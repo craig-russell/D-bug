@@ -27,6 +27,14 @@ class C extends B {
 	}
 }
 
+class E implements Iterator {
+	public function current() {}
+	public function key() {}
+	public function next() {}
+	public function rewind() {}
+	public function valid() {}
+}
+
 $test = [];
 $test[] = fopen(__FILE__, 'r');
 $test[] = 'test';
@@ -37,6 +45,7 @@ $test[] = null;
 $test[] = [[1, 2, 3, 4], 2, 3, 4, new C()];
 $test[] = new A();
 $test[] = new C();
+$test[] = new E();
 
 foreach($test as $k => $t) {
 	echo "Test #", $k, "\n\n";

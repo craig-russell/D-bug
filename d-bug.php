@@ -101,6 +101,16 @@ class D {
 			if(!$ancestorCount)
 				echo "\tNo ancestors\n";
 			
+			echo "\nImplements:\n";
+			$implements = class_implements($class);
+			$implementCount = 0;
+			foreach($implements as $implementedClass) {
+				echo "\t", $implementedClass, "\n\t\t", self::_bugDeclaration(new ReflectionClass($implementedClass)), "\n";
+				++$implementCount;
+			}
+			if(!$implementCount)
+				echo "\tNo interfaces\n";
+			
 			//output a list of constants
 			echo "\nConstants:\n";
 			$constants = $reflectionClass->getConstants();
