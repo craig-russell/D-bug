@@ -144,7 +144,7 @@ class D {
 					echo "\t", self::_getVisibility($method), ' ';
 					if($method->isStatic())
 						echo 'static ';
-					echo $method->getName(), '(', implode(', ', $params), ")\n";
+					echo $method->getName(), '(', implode(', ', $params), ') ', self::_bugMethodDeclaration($method), "\n";
 				}
 			}
 			else
@@ -184,6 +184,13 @@ class D {
 		$reflection = new ReflectionClass($class);
 		$file = $reflection->getFileName();
 		$line = $reflection->getStartLine();
+		
+		return $line . ':' . $file;
+	}
+	
+	protected static function _bugMethodDeclaration($reflectionMethod) {
+		$file = $reflectionMethod->getFileName();
+		$line = $reflectionMethod->getStartLine();
 		
 		return $line . ':' . $file;
 	}
