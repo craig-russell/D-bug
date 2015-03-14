@@ -55,6 +55,16 @@ class D {
 			exit;
 	}
 	
+	//dump the php ini settings
+	public static function bugIni($exit = true) {
+		self::bug(ini_get_all(), false, $exit);
+	}
+	
+	//list all currently included files
+	public static function bugIncludes($exit = true) {
+		self::bug(implode("\n", get_included_files()), false, $exit);
+	}
+	
 	/**
 	 * dump a variable, and provide type info
 	 * recurses one level into arrays and objects
@@ -208,14 +218,5 @@ class D {
 			return 'protected';
 		else
 			return 'private';
-	}
-	
-	//dump the php ini settings
-	public static function bugIni($exit = true) {
-		self::bug(ini_get_all(), false, $exit);
-	}
-	
-	public static function bugIncludes($exit = true) {
-		self::bug(implode("\n", get_included_files()), false, $exit);
 	}
 }
