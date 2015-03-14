@@ -1,5 +1,7 @@
 <?php
 
+chdir(__DIR__);
+
 include '../d-bug.php';
 
 class A {
