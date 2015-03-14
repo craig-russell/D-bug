@@ -69,7 +69,7 @@ class D {
 		if(self::bugWeb())
 			echo "<pre>\n";
 		
-		if(!array(gettype($var), array('resource', 'unknown', 'NULL'))) {
+		if(!array(gettype($var), array('unknown', 'NULL'))) {
 			echo '(' . gettype($var) . ")\n";
 		}
 		else if(!in_array(gettype($var), array('object', 'array'))) {
@@ -163,8 +163,10 @@ class D {
 	protected static function _bugTypeShort($v) {
 		$type = gettype($v);
 		$out = '(' . $type;
-		if(in_array($type, array('resource', 'unknown', 'NULL')))
+		if(in_array($type, array('unknown', 'NULL')))
 			$out .= ')';
+		elseif($type == 'resource')
+			$out .= ' ' . get_resource_type($v) . ')';
 		elseif($type == 'array')
 			$out .= ' ' . sizeof($v) . ')';
 		elseif($type == 'object') {
