@@ -40,19 +40,9 @@ class D {
 	
 	//generate a backtrace
 	public static function bugBacktrace($exit = true) {
-		if(!self::bugMode())
-			return;
-		
-		if(self::bugWeb())
-			echo '<pre>';
-		
+		ob_start();
 		debug_print_backtrace();
-		
-		if(self::bugWeb())
-			echo "</pre>\n";
-		
-		if($exit)
-			exit;
+		self::bug(ob_get_clean(), false, $exit);
 	}
 	
 	//dump the php ini settings
