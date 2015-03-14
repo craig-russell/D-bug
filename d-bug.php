@@ -86,7 +86,7 @@ class D {
 		else if(gettype($var) == 'object') {
 			$class = get_class($var);
 			$reflectionClass = new ReflectionClass($class);
-			echo '(' . gettype($var) . ' ' . $class . ")\n\n";
+			echo self::_bugTypeShort($var), "\n\n";
 			
 			echo "Extends:\n";
 			$ancestorClass = $class;
@@ -94,7 +94,7 @@ class D {
 			while(true) {
 				$ancestorClass = get_parent_class($ancestorClass);
 				if($ancestorClass)
-					echo "\t", $ancestorClass, "\n";
+					echo "\t", $ancestorClass, ' ', self::_bugClassDeclaration($ancestorClass), "\n";
 				else
 					break;
 				++$ancestorCount;
@@ -167,14 +167,24 @@ class D {
 			$out .= ')';
 		elseif($type == 'array')
 			$out .= ' ' . sizeof($v) . ')';
-		elseif($type == 'object')
-			$out .= ' ' . get_class($v) . ')';
+		elseif($type == 'object') {
+			$class = get_class($v);
+			$out .= ' ' . $class . ') ' . self::_bugClassDeclaration($class);
+		}
 		elseif($type == 'boolean')
 			$out .= ') ' . ($v ? 'true' : 'false');
 		else
 			$out .= ') ' . $v;
 		
 		return $out;
+	}
+	
+	protected static function _bugClassDeclaration($class) {
+		$reflection = new ReflectionClass($class);
+		$file = $reflection->getFileName();
+		$line = $reflection->getStartLine();
+		
+		return $line . ':' . $file;
 	}
 	
 	//check reflection object's visibility
