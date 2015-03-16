@@ -149,7 +149,7 @@ class D {
 					$method->setAccessible(true);
 					$params = $method->getParameters();
 					foreach($params as $k => $v)
-						$params[$k] = preg_replace('/(^Parameter #\d+ \[ | \]$)/S', '', $v);
+						$params[$k] = preg_replace('/(^Parameter #\d+ \[ | \]$|\v)/S', '', $v);
 					
 					echo "\t", self::_getVisibility($method), ' ';
 					if($method->isStatic())
