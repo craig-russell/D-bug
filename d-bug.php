@@ -75,7 +75,7 @@ class D {
 			echo self::_bugTypeShort($var), "\n";
 		}
 		else if($type == 'array') {
-			echo '(' . $type . ")\n\n";
+			echo '(' . $type . ' ' . sizeof($var) . ")\n\n";
 			
 			foreach($var as $k => $v) {
 				$type = gettype($v);
