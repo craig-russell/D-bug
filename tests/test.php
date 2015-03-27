@@ -49,7 +49,7 @@ $test[] = new E();
 
 foreach($test as $k => $t) {
 	echo "Test #", $k, "\n\n";
-	D::bugType($t, false);
+	D::bug($t, false);
 	echo "----------------------------------------\n\n";
 }
 

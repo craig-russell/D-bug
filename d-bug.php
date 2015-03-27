@@ -18,7 +18,7 @@ class D {
 	}
 	
 	//dump a variable
-	public static function bug($var, $dump = false, $exit = true) {
+	public static function bugR($var, $dump = false, $exit = true) {
 		if(!self::bugMode())
 			return;
 		
@@ -42,17 +42,17 @@ class D {
 	public static function bugBacktrace($exit = true) {
 		ob_start();
 		debug_print_backtrace();
-		self::bug(ob_get_clean(), false, $exit);
+		self::bugR(ob_get_clean(), false, $exit);
 	}
 	
 	//dump the php ini settings
 	public static function bugIni($exit = true) {
-		self::bug(ini_get_all(), false, $exit);
+		self::bugR(ini_get_all(), false, $exit);
 	}
 	
 	//list all currently included files
 	public static function bugIncludes($exit = true) {
-		self::bug(implode("\n", get_included_files()), false, $exit);
+		self::bugR(implode("\n", get_included_files()), false, $exit);
 	}
 	
 	/**
@@ -60,7 +60,7 @@ class D {
 	 * recurses one level into arrays and objects
 	 * provides extended info about methods and properties
 	 */
-	public static function bugType($var, $exit = true) {
+	public static function bug($var, $exit = true) {
 		if(!self::bugMode())
 			return;
 		
@@ -72,20 +72,20 @@ class D {
 			echo '(' . $type . ")\n";
 		}
 		else if(!in_array($type, array('object', 'array'))) {
-			echo self::_bugTypeShort($var), "\n";
+			echo self::_bugShort($var), "\n";
 		}
 		else if($type == 'array') {
 			echo '(' . $type . ' ' . sizeof($var) . ")\n\n";
 			
 			foreach($var as $k => $v) {
 				$type = gettype($v);
-				echo "\t", $k, ' => ', self::_bugTypeShort($v), "\n";
+				echo "\t", $k, ' => ', self::_bugShort($v), "\n";
 			}
 		}
 		else if($type == 'object') {
 			$class = get_class($var);
 			$reflectionClass = new ReflectionClass($class);
-			echo self::_bugTypeShort($var), "\n\n";
+			echo self::_bugShort($var), "\n\n";
 			
 			echo "Extends:\n";
 			$ancestorClass = $class;
@@ -116,7 +116,7 @@ class D {
 			$constants = $reflectionClass->getConstants();
 			if($constants) {
 				foreach($constants as $k => $v) {
-					echo "\t", $k, ' = ', self::_bugTypeShort($v), "\n";
+					echo "\t", $k, ' = ', self::_bugShort($v), "\n";
 				}
 			}
 			else
@@ -134,7 +134,7 @@ class D {
 					echo "\t", self::_getVisibility($property), ' ';
 					if($property->isStatic())
 						echo 'static ';
-					echo '$', $k, ' = ', self::_bugTypeShort($v), "\n";
+					echo '$', $k, ' = ', self::_bugShort($v), "\n";
 				}
 			}
 			else
@@ -169,7 +169,7 @@ class D {
 			exit;
 	}
 	
-	protected static function _bugTypeShort($v) {
+	protected static function _bugShort($v) {
 		$type = gettype($v);
 		$out = '(' . $type;
 		if(in_array($type, array('unknown', 'NULL')))
