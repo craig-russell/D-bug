@@ -11,6 +11,14 @@ class B extends stdClass {
 		return false;
 	}
 	
+	private function testC() {
+		return true;
+	}
+	
+	public function testD() {
+		return true;
+	}
+	
 	public function testB() {
 		return 1;
 	}
