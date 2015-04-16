@@ -55,6 +55,11 @@ class D {
 		self::bugR(implode("\n", get_included_files()), false, $exit);
 	}
 	
+	//run D-bug on D-bug
+	public static function bugMe() {
+		self::bug(new self());
+	}
+	
 	/**
 	 * dump a variable, and provide type info
 	 * recurses one level into arrays and objects
