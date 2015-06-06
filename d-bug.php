@@ -9,7 +9,7 @@ class D {
 		$headers = function_exists('apache_request_headers') ? apache_request_headers() : array();
 		$ip = isset($headers['X-Forwarded-For']) ? $headers['X-Forwarded-For'] : $_SERVER['REMOTE_ADDR'];
 		
-		return $ip == '127.0.0.1' || preg_match('/^192\.168\./S', $ip);
+		return $ip == '127.0.0.1' || preg_match('/^(192\.168|172\.16|10)\./S', $ip);
 	}
 	
 	//check if the script is running on the web
