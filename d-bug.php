@@ -84,7 +84,7 @@ class D {
 			
 			foreach($var as $k => $v) {
 				$type = gettype($v);
-				echo "\t", $k, ' => ', self::_bugShort($v), "\n";
+				echo "\t", $k, ' => ', self::_bugShort($v, 1), "\n";
 			}
 		}
 		else if($type == 'object') {
@@ -92,45 +92,39 @@ class D {
 			$reflectionClass = new ReflectionClass($class);
 			echo self::_bugShort($var), "\n\n";
 			
-			echo "Extends:\n";
-			$ancestorClass = $class;
-			$ancestorCount = 0;
-			while(true) {
-				$ancestorClass = get_parent_class($ancestorClass);
-				if($ancestorClass)
-					echo "\t", $ancestorClass, "\n\t\t", self::_bugDeclaration(new ReflectionClass($ancestorClass)), "\n";
-				else
-					break;
-				++$ancestorCount;
-			}
-			if(!$ancestorCount)
-				echo "\tNo ancestors\n";
-			
-			echo "\nImplements:\n";
-			$implements = class_implements($class);
-			$implementCount = 0;
-			foreach($implements as $implementedClass) {
-				echo "\t", $implementedClass, "\n\t\t", self::_bugDeclaration(new ReflectionClass($implementedClass)), "\n";
-				++$implementCount;
-			}
-			if(!$implementCount)
-				echo "\tNo interfaces\n";
-			
-			//output a list of constants
-			echo "\nConstants:\n";
-			$constants = $reflectionClass->getConstants();
-			if($constants) {
-				foreach($constants as $k => $v) {
-					echo "\t", $k, ' = ', self::_bugShort($v), "\n";
+			if(get_parent_class($class)) {
+				echo "Extends:\n";
+				$ancestorClass = $class;
+				while(true) {
+					$ancestorClass = get_parent_class($ancestorClass);
+					if($ancestorClass)
+						echo "\t", $ancestorClass, "\n\t\t", self::_bugDeclaration(new ReflectionClass($ancestorClass)), "\n";
+					else
+						break;
 				}
 			}
-			else
-				echo "\tNo constants\n";
+			
+			$implements = class_implements($class);
+			if($implements) {
+				echo "\nImplements:\n";
+				foreach($implements as $implementedClass) {
+					echo "\t", $implementedClass, "\n\t\t", self::_bugDeclaration(new ReflectionClass($implementedClass)), "\n";
+				}
+			}
+			
+			//output a list of constants
+			$constants = $reflectionClass->getConstants();
+			if($constants) {
+			echo "\nConstants:\n";
+				foreach($constants as $k => $v) {
+					echo "\t", $k, ' = ', self::_bugShort($v, 1), "\n";
+				}
+			}
 			
 			//output a list of properties
-			echo "\nProperties:\n";
 			$properties = $reflectionClass->getProperties();
 			if($properties) {
+				echo "\nProperties:\n";
 				foreach($properties as $property) {
 					$property->setAccessible(true);
 					$k = $property->getName();
@@ -139,16 +133,14 @@ class D {
 					echo "\t", self::_getVisibility($property), ' ';
 					if($property->isStatic())
 						echo 'static ';
-					echo '$', $k, ' = ', self::_bugShort($v), "\n";
+					echo '$', $k, ' = ', self::_bugShort($v, 1), "\n";
 				}
 			}
-			else
-				echo "\tNo properties\n";
 			
 			//output a list of methods
-			echo "\nMethods:\n";
 			$methods = $reflectionClass->getMethods();
 			if($methods) {
+				echo "\nMethods:\n";
 				foreach($methods as $method) {
 					//get a pretty list of parameters for this method
 					$method->setAccessible(true);
@@ -159,11 +151,9 @@ class D {
 					echo "\t", self::_getVisibility($method), ' ';
 					if($method->isStatic())
 						echo 'static ';
-					echo $method->getName(), '(', implode(', ', $params), ")\n\t\t", self::_bugDeclaration($method), "\n";
+					echo 'function ', $method->getName(), '(', implode(', ', $params), ")\n\t\t", self::_bugDeclaration($method), "\n";
 				}
 			}
-			else
-				echo "\tNo methods\n";
 		}
 		
 		if(self::bugWeb())
@@ -174,7 +164,8 @@ class D {
 			exit;
 	}
 	
-	protected static function _bugShort($v) {
+	protected static function _bugShort($v, $indentationLevel = 0) {
+		$indentation = str_repeat("\t", $indentationLevel);
 		$type = gettype($v);
 		$out = '(' . $type;
 		if(in_array($type, array('unknown', 'NULL')))
@@ -185,7 +176,7 @@ class D {
 			$out .= ' ' . sizeof($v) . ')';
 		elseif($type == 'object') {
 			$class = get_class($v);
-			$out .= ' ' . $class . ")\n\t\t" . self::_bugDeclaration(new ReflectionClass($class));
+			$out .= ' ' . $class . ")\n" . $indentation . "\t" . self::_bugDeclaration(new ReflectionClass($class));
 		}
 		elseif($type == 'boolean')
 			$out .= ') ' . ($v ? 'true' : 'false');
@@ -199,7 +190,7 @@ class D {
 		$file = $reflection->getFileName();
 		$line = $reflection->getStartLine();
 		if($line !== false)
-			return $line . ':' . $file;
+			return $file . ' : ' . $line;
 		else
 			return 'Predefined';
 	}
