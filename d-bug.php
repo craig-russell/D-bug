@@ -84,7 +84,7 @@ class D {
 			
 			foreach($var as $k => $v) {
 				$type = gettype($v);
-				echo "\t", $k, ' => ', self::_bugShort($v, 1), "\n";
+				echo "\t", self::_emphasize($k), ' => ', self::_bugShort($v, 1), "\n";
 			}
 		}
 		else if($type == 'object') {
@@ -98,7 +98,7 @@ class D {
 				while(true) {
 					$ancestorClass = get_parent_class($ancestorClass);
 					if($ancestorClass)
-						echo "\t", $ancestorClass, "\n\t\t", self::_bugDeclaration(new ReflectionClass($ancestorClass)), "\n";
+						echo "\t", self::_emphasize($ancestorClass), "\n\t\t", self::_bugDeclaration(new ReflectionClass($ancestorClass)), "\n";
 					else
 						break;
 				}
@@ -108,7 +108,7 @@ class D {
 			if($implements) {
 				echo "\nImplements:\n";
 				foreach($implements as $implementedClass) {
-					echo "\t", $implementedClass, "\n\t\t", self::_bugDeclaration(new ReflectionClass($implementedClass)), "\n";
+					echo "\t", self::_emphasize($implementedClass), "\n\t\t", self::_bugDeclaration(new ReflectionClass($implementedClass)), "\n";
 				}
 			}
 			
@@ -117,7 +117,7 @@ class D {
 			if($constants) {
 			echo "\nConstants:\n";
 				foreach($constants as $k => $v) {
-					echo "\t", $k, ' = ', self::_bugShort($v, 1), "\n";
+					echo "\t", self::_emphasize($k), ' = ', self::_bugShort($v, 1), "\n";
 				}
 			}
 			
@@ -133,7 +133,7 @@ class D {
 					echo "\t", self::_getVisibility($property), ' ';
 					if($property->isStatic())
 						echo 'static ';
-					echo '$', $k, ' = ', self::_bugShort($v, 1), "\n";
+					echo self::_emphasize('$' . $k), ' = ', self::_bugShort($v, 1), "\n";
 				}
 			}
 			
@@ -151,7 +151,7 @@ class D {
 					echo "\t", self::_getVisibility($method), ' ';
 					if($method->isStatic())
 						echo 'static ';
-					echo 'function ', $method->getName(), '(', implode(', ', $params), ")\n\t\t", self::_bugDeclaration($method), "\n";
+					echo 'function ', self::_emphasize($method->getName()), '(', implode(', ', $params), ")\n\t\t", self::_bugDeclaration($method), "\n";
 				}
 			}
 		}
@@ -176,7 +176,7 @@ class D {
 			$out .= ' ' . sizeof($v) . ')';
 		elseif($type == 'object') {
 			$class = get_class($v);
-			$out .= ' ' . $class . ")\n" . $indentation . "\t" . self::_bugDeclaration(new ReflectionClass($class));
+			$out .= ' ' . self::_emphasize($class) . ")\n" . $indentation . "\t" . self::_bugDeclaration(new ReflectionClass($class));
 		}
 		elseif($type == 'boolean')
 			$out .= ') ' . ($v ? 'true' : 'false');
@@ -204,5 +204,14 @@ class D {
 			return 'protected';
 		else
 			return 'private';
+	}
+	
+	protected static function _emphasize($in) {
+		$out = '';
+		$web = self::bugWeb();
+		if($web)
+			return '<strong>' . $in . '</strong>';
+		else
+			return $in;
 	}
 }
