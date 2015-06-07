@@ -1,6 +1,8 @@
 <?php
 
 class D {
+	const STYLE = 'text-align: left; color: black; background-color: white; font-size: normal; padding: 10px; font-family: monospace;';
+	
 	//check if it's safe to show debug output
 	public static function bugMode() {
 		if(!self::bugWeb())
@@ -23,7 +25,7 @@ class D {
 			return;
 		
 		if(self::bugWeb())
-			echo '<pre>';
+			echo '<pre style="', self::STYLE, '">';
 		
 		if($dump)
 			var_dump($var);
@@ -70,7 +72,7 @@ class D {
 			return;
 		
 		if(self::bugWeb())
-			echo "<pre>\n";
+			echo '<pre style="', self::STYLE, '">', "\n";
 		
 		$type = gettype($var);
 		if(!array($type, array('unknown', 'NULL'))) {
