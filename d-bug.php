@@ -1,7 +1,7 @@
 <?php
 
 class D {
-	const STYLE = 'text-align: left; color: black; background-color: white; font-size: normal; padding: 10px; font-family: monospace;';
+	const STYLE = 'text-align: left; color: black; background-color: white; font-size: medium; padding: 10px; font-family: monospace; text-transform: medium;';
 	
 	//check if it's safe to show debug output
 	public static function bugMode() {
