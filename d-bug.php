@@ -75,7 +75,7 @@ class D {
 			echo '<pre style="', self::STYLE, '">', "\n";
 		
 		$type = gettype($var);
-		if(!array($type, array('unknown', 'NULL'))) {
+		if(in_array($type, array('unknown', 'NULL'))) {
 			echo '(' . $type . ")\n";
 		}
 		else if(!in_array($type, array('object', 'array'))) {
@@ -182,6 +182,8 @@ class D {
 		}
 		elseif($type == 'boolean')
 			$out .= ') ' . ($v ? 'true' : 'false');
+		elseif($type == 'string')
+			$out .= ' ' . strlen($v) . ') ' . $v;
 		else
 			$out .= ') ' . $v;
 		
