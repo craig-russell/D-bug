@@ -3,7 +3,11 @@
 class D {
 	const STYLE = 'text-align: left; color: black; background-color: white; font-size: medium; padding: 10px; font-family: monospace; text-transform: none;';
 	
-	//check if it's safe to show debug output
+	/**
+	 * Check if it's safe to show debug output
+	 * 
+	 * @return bool
+	 */
 	public static function bugMode() {
 		if(!self::bugWeb())
 			return true;
@@ -14,12 +18,22 @@ class D {
 		return $ip == '127.0.0.1' || preg_match('/^(192\.168|172\.16|10)\./S', $ip);
 	}
 	
-	//check if the script is running on the web
+	/**
+	 * Check if the script is running on the web
+	 * 
+	 * @return bool
+	 */
 	public static function bugWeb() {
 		return php_sapi_name() != 'cli';
 	}
 	
-	//dump a variable
+	/**
+	 * Dump a variable recursively
+	 * 
+	 * @param mixed $var
+	 * @param bool $dump
+	 * @param bool $exit
+	 */
 	public static function bugR($var, $dump = false, $exit = true) {
 		if(!self::bugMode())
 			return;
@@ -40,32 +54,51 @@ class D {
 			exit;
 	}
 	
-	//generate a backtrace
+	/**
+	 * Generate a backtrace
+	 * 
+	 * @param bool $exit
+	 */
 	public static function bugBacktrace($exit = true) {
 		ob_start();
 		debug_print_backtrace();
 		self::bugR(ob_get_clean(), false, $exit);
 	}
 	
-	//dump the php ini settings
+	/**
+	 * Dump the php ini settings
+	 * 
+	 * @param bool $exit
+	 */
 	public static function bugIni($exit = true) {
 		self::bugR(ini_get_all(), false, $exit);
 	}
 	
-	//list all currently included files
+	/**
+	 * List all currently included files
+	 * 
+	 * @param bool $exit
+	 */
 	public static function bugIncludes($exit = true) {
 		self::bugR(implode("\n", get_included_files()), false, $exit);
 	}
 	
-	//run D-bug on D-bug
-	public static function bugMe() {
-		self::bug(new self());
+	/**
+	 * Turn D-bug on itself
+	 * 
+	 * @param bool $exit
+	 */
+	public static function bugMe($exit = true) {
+		self::bug(new self(), $exit);
 	}
 	
 	/**
-	 * dump a variable, and provide type info
-	 * recurses one level into arrays and objects
-	 * provides extended info about methods and properties
+	 * Dump a variable, and provide type info
+	 * Recurses one level into arrays and objects
+	 * Provides extended info about methods and properties
+	 * 
+	 * @param mixed $var
+	 * @param bool $exit
 	 */
 	public static function bug($var, $exit = true) {
 		if(!self::bugMode())
@@ -166,6 +199,14 @@ class D {
 			exit;
 	}
 	
+	/**
+	 * Get formatted info about a variable
+	 * 
+	 * @param mixed $v
+	 * @param int $indentationLevel
+	 * 
+	 * @return string
+	 */
 	protected static function _bugShort($v, $indentationLevel = 0) {
 		$indentation = str_repeat("\t", $indentationLevel);
 		$type = gettype($v);
@@ -190,6 +231,13 @@ class D {
 		return $out;
 	}
 	
+	/**
+	 * Gets declaration info from a reflection object
+	 * 
+	 * @param object $reflection
+	 * 
+	 * @return string
+	 */
 	protected static function _bugDeclaration($reflection) {
 		$file = $reflection->getFileName();
 		$line = $reflection->getStartLine();
@@ -199,17 +247,30 @@ class D {
 			return 'Predefined';
 	}
 	
-	//check reflection object's visibility
-	protected static function _getVisibility($obj) {
-		$obj->setAccessible(true);
-		if($obj->isPublic())
+	/**
+	 * Check a reflection object's visibility
+	 * 
+	 * @param object $reflection
+	 * 
+	 * @return string
+	 */
+	protected static function _getVisibility($reflection) {
+		$reflection->setAccessible(true);
+		if($reflection->isPublic())
 			return 'public';
-		elseif($obj->isProtected())
+		elseif($reflection->isProtected())
 			return 'protected';
 		else
 			return 'private';
 	}
 	
+	/**
+	 * Add appropriate emphasis to a string
+	 * 
+	 * @param string $in
+	 * 
+	 * @return string
+	 */
 	protected static function _emphasize($in) {
 		$out = '';
 		$web = self::bugWeb();
