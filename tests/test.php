@@ -33,6 +33,10 @@ class C extends B {
 	public static function testA($a, $b = true) {
 		return true;
 	}
+	
+	public function testB() {
+		return 2;
+	}
 }
 
 class E implements Iterator {
@@ -41,6 +45,12 @@ class E implements Iterator {
 	public function next() {}
 	public function rewind() {}
 	public function valid() {}
+}
+
+class F extends mysqli {
+	public function use_result() {
+		echo "test\n";
+	}
 }
 
 $test = [];
@@ -54,6 +64,7 @@ $test[] = [[1, 2, 3, 4], 2, 3, 4, new C()];
 $test[] = new A();
 $test[] = new C();
 $test[] = new E();
+$test[] = new F();
 
 foreach($test as $k => $t) {
 	echo "Test #", $k, "\n\n";

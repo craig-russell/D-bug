@@ -127,15 +127,20 @@ class D {
 			$reflectionClass = new ReflectionClass($class);
 			echo self::_bugShort($var), "\n\n";
 			
+			$ancestors = array($reflectionClass);
 			if(get_parent_class($class)) {
 				echo "\n", self::_emphasize('Extends:', 'heading'), "\n";
 				$ancestorClass = $class;
 				while(true) {
 					$ancestorClass = get_parent_class($ancestorClass);
-					if($ancestorClass)
-						echo "\t", self::_emphasize($ancestorClass, 'name'), "\n\t\t", self::_bugDeclaration(new ReflectionClass($ancestorClass)), "\n";
-					else
+					if($ancestorClass) {
+						$ancestor = new ReflectionClass($ancestorClass);
+						$ancestors[] = $ancestor;
+						echo "\t", self::_emphasize($ancestorClass, 'name'), "\n\t\t", self::_bugDeclaration($ancestor), "\n";
+					}
+					else {
 						break;
+					}
 				}
 			}
 			
@@ -192,7 +197,12 @@ class D {
 					if($method->isStatic())
 						$declaration .= self::_emphasize('static ', 'static');
 					$declaration .= 'function ';
-					echo $declaration, self::_emphasize($method->getName(), 'name'), '(', implode(', ', $params), ")\n\t\t", self::_bugDeclaration($method), "\n";
+					echo $declaration, self::_emphasize($method->getName(), 'name'), '(', implode(', ', $params), ")\n";
+					
+					$methodDeclarations = self::_bugMethodDeclaration($method, $ancestors);
+					foreach($methodDeclarations as $methodDeclaration) {
+						echo "\t\t", implode(' : ', $methodDeclaration), "\n";
+					}
 				}
 			}
 		}
@@ -235,6 +245,33 @@ class D {
 			$out .= ') ' . self::_emphasize($v, 'value');
 		
 		return $out;
+	}
+	
+	/**
+	 * Gets declaration info from a ReflectionMethod object
+	 * 
+	 * @param object $reflection
+	 * @param array $ancestors
+	 * 
+	 * @return array
+	 */
+	protected static function _bugMethodDeclaration($reflection, $ancestors = array()) {
+		$methodName = $reflection->name;
+		$declarations = array();
+		foreach($ancestors as $ancestor) {
+			if($ancestor->hasMethod($methodName)) {
+				$method = $ancestor->getMethod($methodName);
+				if(!$method->getFileName()) {
+					$declarations['Predefined'] = array('Predefined');
+				}
+				else {
+					$declaration = array($method->getFileName(), $method->getStartLine());
+					$declarations[implode(':', $declaration)] = $declaration;
+				}
+			}
+		}
+		
+		return $declarations;
 	}
 	
 	/**
