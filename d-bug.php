@@ -170,7 +170,7 @@ class D {
 					$k = $property->getName();
 					$v = $property->getValue($var);
 					
-					echo "\t", self::_emphasize(self::_getVisibility($property), 'declaration'), ' ';
+					echo "\t", self::_emphasize(self::_getVisibility($property), 'visibility'), ' ';
 					if($property->isStatic())
 						echo self::_emphasize('static ', 'static');
 					echo self::_emphasize('$' . $k, 'name'), ' = ', self::_bugShort($v, 1), "\n";
@@ -188,16 +188,14 @@ class D {
 					foreach($params as $k => $v) {
 						$param = preg_replace('/(^Parameter #\d+ \[ | \]$|\v)/S', '', $v);
 						$param = preg_replace('/<(required|optional)> /S', '', $param);
-						$param = preg_replace('/(\$.+?)\b/S', self::_emphasize('$1', 'name'), $param);
+						$param = preg_replace('/^(\$.+?)\b/S', self::_emphasize('$1', 'name'), $param);
 						$params[$k] = $param;
 					}
 					
 					echo "\t";
-					$declaration = self::_emphasize(self::_getVisibility($method), 'declaration') . ' ';
-					if($method->isStatic())
-						$declaration .= self::_emphasize('static ', 'static');
-					$declaration .= 'function ';
-					echo $declaration, self::_emphasize($method->getName(), 'name'), '(', implode(', ', $params), ")\n";
+					$visibility = self::_emphasize(self::_getVisibility($method), 'visibility') . ' ';
+					$static = $method->isStatic() ? self::_emphasize('static ', 'static') : '';
+					echo $visibility, $static, 'function ', self::_emphasize($method->getName(), 'name'), '(', implode(', ', $params), ")\n";
 					
 					$methodDeclarations = self::_bugMethodDeclaration($method, $ancestors);
 					foreach($methodDeclarations as $methodDeclaration) {
@@ -334,7 +332,7 @@ class D {
 		$styles = array(
 			'default'		=> array("\033[0;39m", ''),
 			'name'			=> array("\033[1;32m", 'font-weight: bold; color: green;'),
-			'declaration'	=> array("\033[1;35m", 'color: magenta;'),
+			'visibility'	=> array("\033[1;35m", 'color: magenta;'),
 			'type'			=> array("\033[1;36m", 'color: darkcyan;'),
 			'static'		=> array("\033[1;31m", 'color: firebrick;'),
 			'value'			=> array("\033[1;37m", ''),
