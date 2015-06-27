@@ -216,7 +216,10 @@ class D {
 					foreach($params as $k => $v) {
 						$param = preg_replace('/(^Parameter #\d+ \[ | \]$|\v)/S', '', $v);
 						$param = preg_replace('/<(required|optional)> /S', '', $param);
-						$param = preg_replace('/^(\$.+?)\b/S', self::_emphasize('$1', 'name'), $param);
+						if(preg_match('/^([^$]+ )?/S', $param))
+							$param = preg_replace('/^([^$]+ )?(\$.+?)\b/S', self::_emphasize('$1', 'type') . self::_emphasize('$2', 'paramName'), $param);
+						else
+							$param = preg_replace('/^(\$.+?)\b/S', self::_emphasize('$1', 'paramName'), $param);
 						$params[$k] = $param;
 					}
 					
@@ -363,6 +366,7 @@ class D {
 			'visibility'	=> array("\033[1;35m", 'color: magenta;'),
 			'type'			=> array("\033[1;36m", 'color: darkcyan;'),
 			'static'		=> array("\033[1;31m", 'color: firebrick;'),
+			'paramName'		=> array("\033[0;32m", 'color: darkgreen;'),
 			'value'			=> array("\033[1;37m", ''),
 			'heading'		=> array("\033[1;37m", 'font-weight: bold;')
 		);
