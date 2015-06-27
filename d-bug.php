@@ -147,7 +147,7 @@ class D {
 			
 			foreach($var as $k => $v) {
 				$type = gettype($v);
-				echo "\t", self::_emphasize($k, 'name'), ' => ', self::_bugShort($v, 1), "\n";
+				echo "\t", self::_emphasize($k, 'importantName'), ' => ', self::_bugShort($v, 1), "\n";
 			}
 		}
 		else if($type == 'object') {
@@ -164,7 +164,7 @@ class D {
 					if($ancestorClass) {
 						$ancestor = new ReflectionClass($ancestorClass);
 						$ancestors[] = $ancestor;
-						echo "\t", self::_emphasize($ancestorClass, 'name'), "\n\t\t", self::_bugDeclaration($ancestor), "\n";
+						echo "\t", self::_emphasize($ancestorClass, 'importantName'), "\n\t\t", self::_bugDeclaration($ancestor), "\n";
 					}
 					else {
 						break;
@@ -176,7 +176,7 @@ class D {
 			if($implements) {
 				echo "\n", self::_emphasize('Implements:', 'heading'), "\n";
 				foreach($implements as $implementedClass) {
-					echo "\t", self::_emphasize($implementedClass, 'name'), "\n\t\t", self::_bugDeclaration(new ReflectionClass($implementedClass)), "\n";
+					echo "\t", self::_emphasize($implementedClass, 'importantName'), "\n\t\t", self::_bugDeclaration(new ReflectionClass($implementedClass)), "\n";
 				}
 			}
 			
@@ -185,7 +185,7 @@ class D {
 			if($constants) {
 			echo "\n", self::_emphasize('Constants:', 'heading'), "\n";
 				foreach($constants as $k => $v) {
-					echo "\t", self::_emphasize($k, 'name'), ' = ', self::_bugShort($v, 1), "\n";
+					echo "\t", self::_emphasize($k, 'importantName'), ' = ', self::_bugShort($v, 1), "\n";
 				}
 			}
 			
@@ -201,7 +201,7 @@ class D {
 					echo "\t", self::_emphasize(self::_getVisibility($property), 'visibility'), ' ';
 					if($property->isStatic())
 						echo self::_emphasize('static ', 'static');
-					echo self::_emphasize('$' . $k, 'name'), ' = ', self::_bugShort($v, 1), "\n";
+					echo self::_emphasize('$' . $k, 'importantName'), ' = ', self::_bugShort($v, 1), "\n";
 				}
 			}
 			
@@ -226,11 +226,16 @@ class D {
 					echo "\t";
 					$visibility = self::_emphasize(self::_getVisibility($method), 'visibility') . ' ';
 					$static = $method->isStatic() ? self::_emphasize('static ', 'static') : '';
-					echo $visibility, $static, 'function ', self::_emphasize($method->getName(), 'name'), '(', implode(', ', $params), ")\n";
+					echo $visibility, $static, 'function ', self::_emphasize($method->getName(), 'importantName'), '(', implode(', ', $params), ")\n";
 					
 					$methodDeclarations = self::_bugMethodDeclaration($method, $ancestors);
 					foreach($methodDeclarations as $methodDeclaration) {
-						echo "\t\t", implode(' : ', $methodDeclaration), "\n";
+						if(sizeof($methodDeclaration) == 3) {
+							echo "\t\t", $methodDeclaration[0], ' : ', $methodDeclaration[1], ' (', self::_emphasize($methodDeclaration[2], 'name'), ")\n";
+						}
+						else {
+							echo "\t\t", $methodDeclaration[0], ' (', self::_emphasize($methodDeclaration[1], 'name'), ")\n";
+						}
 					}
 				}
 			}
@@ -264,7 +269,7 @@ class D {
 			$out .= ' ' . sizeof($v) . ')';
 		elseif($type == 'object') {
 			$class = get_class($v);
-			$out .= ' ' . self::_emphasize($class, 'name') . ")\n" . $indentation . "\t" . self::_bugDeclaration(new ReflectionClass($class));
+			$out .= ' ' . self::_emphasize($class, 'importantName') . ")\n" . $indentation . "\t" . self::_bugDeclaration(new ReflectionClass($class));
 		}
 		elseif($type == 'boolean')
 			$out .= ') ' . self::_emphasize($v ? 'true' : 'false', 'value');
@@ -291,10 +296,10 @@ class D {
 			if($ancestor->hasMethod($methodName)) {
 				$method = $ancestor->getMethod($methodName);
 				if(!$method->getFileName()) {
-					$declarations['Predefined'] = array('Predefined');
+					$declarations['Predefined'] = array('Predefined', $ancestor->name);
 				}
 				else {
-					$declaration = array($method->getFileName(), $method->getStartLine());
+					$declaration = array($method->getFileName(), $method->getStartLine(), $ancestor->name);
 					$declarations[implode(':', $declaration)] = $declaration;
 				}
 			}
@@ -362,7 +367,8 @@ class D {
 	protected static function _getStyle($name = 'default') {
 		$styles = array(
 			'default'		=> array("\033[0;39m", ''),
-			'name'			=> array("\033[1;32m", 'font-weight: bold; color: green;'),
+			'name'			=> array("\033[0;32m", 'color: green;'),
+			'importantName'	=> array("\033[1;32m", 'font-weight: bold; color: green;'),
 			'visibility'	=> array("\033[1;35m", 'color: magenta;'),
 			'type'			=> array("\033[1;36m", 'color: darkcyan;'),
 			'static'		=> array("\033[1;31m", 'color: firebrick;'),
