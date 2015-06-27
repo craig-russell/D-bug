@@ -1,7 +1,7 @@
 <?php
 
 class D {
-	const STYLE = 'text-align: left; color: black; background-color: white; font-size: medium; padding: 10px; font-family: monospace; text-transform: none;';
+	const STYLE = 'text-align: left; color: black; background-color: white; font-size: medium; padding: 10px; font-family: monospace; text-transform: none; font-weight: 400;';
 	
 	/**
 	 * Check if it's safe to show debug output
@@ -109,17 +109,17 @@ class D {
 		
 		$type = gettype($var);
 		if(in_array($type, array('unknown', 'NULL'))) {
-			echo '(' . $type . ")\n";
+			echo '(' . self::_emphasize($type, 'type') . ")\n";
 		}
 		else if(!in_array($type, array('object', 'array'))) {
 			echo self::_bugShort($var), "\n";
 		}
 		else if($type == 'array') {
-			echo '(' . $type . ' ' . sizeof($var) . ")\n\n";
+			echo '(' . self::_emphasize($type, 'type') . ' ' . sizeof($var) . ")\n\n";
 			
 			foreach($var as $k => $v) {
 				$type = gettype($v);
-				echo "\t", self::_emphasize($k), ' => ', self::_bugShort($v, 1), "\n";
+				echo "\t", self::_emphasize($k, 'name'), ' => ', self::_bugShort($v, 1), "\n";
 			}
 		}
 		else if($type == 'object') {
@@ -128,12 +128,12 @@ class D {
 			echo self::_bugShort($var), "\n\n";
 			
 			if(get_parent_class($class)) {
-				echo "Extends:\n";
+				echo "\n", self::_emphasize('Extends:', 'heading'), "\n";
 				$ancestorClass = $class;
 				while(true) {
 					$ancestorClass = get_parent_class($ancestorClass);
 					if($ancestorClass)
-						echo "\t", self::_emphasize($ancestorClass), "\n\t\t", self::_bugDeclaration(new ReflectionClass($ancestorClass)), "\n";
+						echo "\t", self::_emphasize($ancestorClass, 'name'), "\n\t\t", self::_bugDeclaration(new ReflectionClass($ancestorClass)), "\n";
 					else
 						break;
 				}
@@ -141,52 +141,58 @@ class D {
 			
 			$implements = class_implements($class);
 			if($implements) {
-				echo "\nImplements:\n";
+				echo "\n", self::_emphasize('Implements:', 'heading'), "\n";
 				foreach($implements as $implementedClass) {
-					echo "\t", self::_emphasize($implementedClass), "\n\t\t", self::_bugDeclaration(new ReflectionClass($implementedClass)), "\n";
+					echo "\t", self::_emphasize($implementedClass, 'name'), "\n\t\t", self::_bugDeclaration(new ReflectionClass($implementedClass)), "\n";
 				}
 			}
 			
 			//output a list of constants
 			$constants = $reflectionClass->getConstants();
 			if($constants) {
-			echo "\nConstants:\n";
+			echo "\n", self::_emphasize('Constants:', 'heading'), "\n";
 				foreach($constants as $k => $v) {
-					echo "\t", self::_emphasize($k), ' = ', self::_bugShort($v, 1), "\n";
+					echo "\t", self::_emphasize($k, 'name'), ' = ', self::_bugShort($v, 1), "\n";
 				}
 			}
 			
 			//output a list of properties
 			$properties = $reflectionClass->getProperties();
 			if($properties) {
-				echo "\nProperties:\n";
+				echo "\n", self::_emphasize('Properties:', 'heading'), "\n";
 				foreach($properties as $property) {
 					$property->setAccessible(true);
 					$k = $property->getName();
 					$v = $property->getValue($var);
 					
-					echo "\t", self::_getVisibility($property), ' ';
+					echo "\t", self::_emphasize(self::_getVisibility($property), 'declaration'), ' ';
 					if($property->isStatic())
-						echo 'static ';
-					echo self::_emphasize('$' . $k), ' = ', self::_bugShort($v, 1), "\n";
+						echo self::_emphasize('static ', 'static');
+					echo self::_emphasize('$' . $k, 'name'), ' = ', self::_bugShort($v, 1), "\n";
 				}
 			}
 			
 			//output a list of methods
 			$methods = $reflectionClass->getMethods();
 			if($methods) {
-				echo "\nMethods:\n";
+				echo "\n", self::_emphasize('Methods:', 'heading'), "\n";
 				foreach($methods as $method) {
 					//get a pretty list of parameters for this method
 					$method->setAccessible(true);
 					$params = $method->getParameters();
-					foreach($params as $k => $v)
-						$params[$k] = preg_replace('/(^Parameter #\d+ \[ | \]$|\v)/S', '', $v);
+					foreach($params as $k => $v) {
+						$param = preg_replace('/(^Parameter #\d+ \[ | \]$|\v)/S', '', $v);
+						$param = preg_replace('/<(required|optional)> /S', '', $param);
+						$param = preg_replace('/(\$.+?)\b/S', self::_emphasize('$1', 'name'), $param);
+						$params[$k] = $param;
+					}
 					
-					echo "\t", self::_getVisibility($method), ' ';
+					echo "\t";
+					$declaration = self::_emphasize(self::_getVisibility($method), 'declaration') . ' ';
 					if($method->isStatic())
-						echo 'static ';
-					echo 'function ', self::_emphasize($method->getName()), '(', implode(', ', $params), ")\n\t\t", self::_bugDeclaration($method), "\n";
+						$declaration .= self::_emphasize('static ', 'static');
+					$declaration .= 'function ';
+					echo $declaration, self::_emphasize($method->getName(), 'name'), '(', implode(', ', $params), ")\n\t\t", self::_bugDeclaration($method), "\n";
 				}
 			}
 		}
@@ -210,7 +216,7 @@ class D {
 	protected static function _bugShort($v, $indentationLevel = 0) {
 		$indentation = str_repeat("\t", $indentationLevel);
 		$type = gettype($v);
-		$out = '(' . $type;
+		$out = '(' . self::_emphasize($type, 'type');
 		if(in_array($type, array('unknown', 'NULL')))
 			$out .= ')';
 		elseif($type == 'resource')
@@ -219,14 +225,14 @@ class D {
 			$out .= ' ' . sizeof($v) . ')';
 		elseif($type == 'object') {
 			$class = get_class($v);
-			$out .= ' ' . self::_emphasize($class) . ")\n" . $indentation . "\t" . self::_bugDeclaration(new ReflectionClass($class));
+			$out .= ' ' . self::_emphasize($class, 'name') . ")\n" . $indentation . "\t" . self::_bugDeclaration(new ReflectionClass($class));
 		}
 		elseif($type == 'boolean')
-			$out .= ') ' . ($v ? 'true' : 'false');
+			$out .= ') ' . self::_emphasize($v ? 'true' : 'false', 'value');
 		elseif($type == 'string')
-			$out .= ' ' . strlen($v) . ') ' . $v;
+			$out .= ' ' . strlen($v) . ') ' . self::_emphasize($v, 'value');
 		else
-			$out .= ') ' . $v;
+			$out .= ') ' . self::_emphasize($v, 'value');
 		
 		return $out;
 	}
@@ -271,12 +277,35 @@ class D {
 	 * 
 	 * @return string
 	 */
-	protected static function _emphasize($in) {
+	protected static function _emphasize($in, $type = 'default') {
 		$out = '';
 		$web = self::bugWeb();
 		if($web)
-			return '<strong>' . $in . '</strong>';
+			return '<span style="' . self::_getStyle($type) . '">' . $in . '</span>';
 		else
-			return $in;
+			return self::_getStyle($type) . $in . "\033[0;39m";
+	}
+	
+	/**
+	 * Attempts to get the specified style
+	 * 
+	 * @param string $name
+	 * 
+	 * return string
+	 */
+	protected static function _getStyle($name = 'default') {
+		$styles = array(
+			'default'		=> array("\033[0;39m", ''),
+			'name'			=> array("\033[1;32m", 'font-weight: bold; color: green;'),
+			'declaration'	=> array("\033[1;35m", 'color: magenta;'),
+			'type'			=> array("\033[1;36m", 'color: darkcyan;'),
+			'static'		=> array("\033[1;31m", 'color: firebrick;'),
+			'value'			=> array("\033[1;37m", ''),
+			'heading'		=> array("\033[1;37m", 'font-weight: bold;')
+		);
+		
+		$style = isset($styles[$name]) ? $styles[$name] : $styles['default'];
+		
+		return self::bugWeb() ? $style[1] : $style[0];
 	}
 }
