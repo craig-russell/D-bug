@@ -32,6 +32,10 @@ chdir(__DIR__);
 
 include '../d-bug.php';
 
+function backtraceTest() {
+	return B::backtrace();
+}
+
 class A {}
 
 class B extends stdClass {
@@ -50,6 +54,12 @@ class B extends stdClass {
 	public function testB() {
 		return 1;
 	}
+	
+	public static function backtrace() {
+		$c = new C();
+		
+		return $c->returnThis()->doBacktrace();
+	}
 }
 
 class C extends B {
@@ -64,6 +74,18 @@ class C extends B {
 	
 	public function testB() {
 		return 2;
+	}
+	
+	public function returnThis() {
+		return $this;
+	}
+	
+	public static function doBacktrace() {
+		$c = new C();
+		ob_start();
+		D::bugBacktrace(false);
+		
+		return ob_get_clean();
 	}
 }
 
@@ -81,23 +103,29 @@ class F extends mysqli {
 	}
 }
 
-$test = [];
-$test[] = fopen(__FILE__, 'r');
-$test[] = 'test';
-$test[] = 1;
-$test[] = 2.3;
-$test[] = true;
-$test[] = null;
-$test[] = [[1, 2, 3, 4], 2, 3, 4, new C()];
-$test[] = new A();
-$test[] = new C();
-$test[] = new E();
-$test[] = new F();
+$test = array();
+$test[] = array(fopen(__FILE__, 'r'), true);
+$test[] = array('test', true);
+$test[] = array(1, true);
+$test[] = array(2.3, true);
+$test[] = array(true, true);
+$test[] = array(null, true);
+$test[] = array(array(array(1, 2, 3, 4), 2, 3, 4, new C()), true);
+$test[] = array(new A(), true);
+$test[] = array(new C(), true);
+$test[] = array(new E(), true);
+$test[] = array(new F(), true);
+$test[] = array(backtraceTest(), false);
 
 foreach($test as $k => $t) {
 	echo "Test #", $k, "\n\n";
-	D::bug($t, false);
+	
+	if($t[1])
+		D::bug($t[0], false);
+	else
+		echo $t[0], "\n";
+	
 	echo "----------------------------------------\n\n";
 }
 
-fclose($test[0]);
+fclose($test[0][0]);
