@@ -137,13 +137,13 @@ class D {
 		
 		$type = gettype($var);
 		if(in_array($type, array('unknown', 'NULL'))) {
-			echo '(' . self::_emphasize($type, 'type') . ")\n";
+			echo self::_bugTypeString($var), "\n";
 		}
 		else if(!in_array($type, array('object', 'array'))) {
 			echo self::_bugShort($var), "\n";
 		}
 		else if($type == 'array') {
-			echo '(' . self::_emphasize($type, 'type') . ' ' . sizeof($var) . ")\n\n";
+			echo self::_bugTypeString($var), "\n\n";
 			
 			foreach($var as $k => $v) {
 				$type = gettype($v);
@@ -260,23 +260,45 @@ class D {
 	protected static function _bugShort($v, $indentationLevel = 0) {
 		$indentation = str_repeat("\t", $indentationLevel);
 		$type = gettype($v);
-		$out = '(' . self::_emphasize($type, 'type');
-		if(in_array($type, array('unknown', 'NULL')))
-			$out .= ')';
-		elseif($type == 'resource')
-			$out .= ' ' . get_resource_type($v) . ')';
-		elseif($type == 'array')
-			$out .= ' ' . sizeof($v) . ')';
+		$out = self::_bugTypeString($v);
+		if(in_array($type, array('unknown', 'NULL', 'resource', 'array')))
+			$out .= '';
 		elseif($type == 'object') {
 			$class = get_class($v);
-			$out .= ' ' . self::_emphasize($class, 'importantName') . ")\n" . $indentation . "\t" . self::_bugDeclaration(new ReflectionClass($class));
+			$out .= "\n" . $indentation . "\t" . self::_bugDeclaration(new ReflectionClass($class));
 		}
 		elseif($type == 'boolean')
-			$out .= ') ' . self::_emphasize($v ? 'true' : 'false', 'value');
+			$out .= self::_emphasize($v ? 'true' : 'false', 'value');
 		elseif($type == 'string')
-			$out .= ' ' . strlen($v) . ') ' . self::_emphasize($v, 'value');
+			$out .= self::_emphasize($v, 'value');
 		else
-			$out .= ') ' . self::_emphasize($v, 'value');
+			$out .= self::_emphasize($v, 'value');
+		
+		return $out;
+	}
+	
+	/**
+	 * Generates a variable's formatted type string
+	 * 
+	 * @param mixed $var
+	 * 
+	 * @return string
+	 */
+	protected static function _bugTypeString($var) {
+		$type = gettype($var);
+		$out = '(' . self::_emphasize($type, 'type');
+		if($type == 'resource')
+			$out .= ' ' . get_resource_type($var);
+		elseif($type == 'array')
+			$out .= ' ' . sizeof($var);
+		elseif($type == 'object') {
+			$class = get_class($var);
+			$out .= ' ' . self::_emphasize($class, 'importantName');
+		}
+		elseif($type == 'string')
+			$out .= ' ' . strlen($var);
+		
+		$out .= ') ';
 		
 		return $out;
 	}
