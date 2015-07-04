@@ -16,7 +16,7 @@ D-bug is a library that makes debugging PHP applications easier and less error p
 Include the library somewhere in your project, preferably in the first file that is loaded.
 
 ```php
-require_once('d-bug.php');
+include('d-bug.php');
 ```
 
 Debug a variable *non-recursively*
