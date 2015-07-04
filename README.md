@@ -31,6 +31,12 @@ Debug a variable *recursively*
 D::bugR($yourVariable);
 ```
 
+Dump a class
+
+```php
+D::bugClass('YourClass');
+```
+
 Generate a backtrace
 
 ```php

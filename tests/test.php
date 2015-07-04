@@ -36,6 +36,13 @@ function backtraceTest() {
 	return B::backtrace();
 }
 
+function staticClassTest() {
+	ob_start();
+	D::bugMe(false);
+	
+	return ob_get_clean();
+}
+
 class A {}
 
 class B extends stdClass {
@@ -117,6 +124,7 @@ $test[] = array(new C(), true);
 $test[] = array(new E(), true);
 $test[] = array(new F(), true);
 $test[] = array(backtraceTest(), false);
+$test[] = array(staticClassTest(), false);
 
 foreach($test as $k => $t) {
 	echo "Test #", $k, "\n\n";

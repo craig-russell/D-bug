@@ -117,7 +117,7 @@ class D {
 	 * @param bool $exit
 	 */
 	public static function bugMe($exit = true) {
-		self::bug(new self(), $exit);
+		self::bugClass(__CLASS__, $exit);
 	}
 	
 	/**
@@ -161,6 +161,21 @@ class D {
 		if(self::bugWeb())
 			echo "\n</pre>";
 		echo "\n";
+		
+		if($exit)
+			exit;
+	}
+	
+	/**
+	 * Dumps information about a class without instantiating it.
+	 * 
+	 * @param string $class
+	 * $param bool $exit
+	 */
+	public static function bugClass($class, $exit = true) {
+		echo self::_bugShort(null, 0, 'class'), "\n\n";
+		$reflectionClass = new ReflectionClass($class);
+		self::_bugReflectionClass($reflectionClass);
 		
 		if($exit)
 			exit;
@@ -269,13 +284,19 @@ class D {
 	 * 
 	 * @param mixed $v
 	 * @param int $indentationLevel
+	 * @param string $exoticType
 	 * 
 	 * @return string
 	 */
-	protected static function _bugShort($v, $indentationLevel = 0) {
+	protected static function _bugShort($v, $indentationLevel = 0, $exoticType = null) {
 		$indentation = str_repeat("\t", $indentationLevel);
 		$type = gettype($v);
-		$out = self::_bugTypeString($v);
+		
+		if($exoticType === null)
+			$out = self::_bugTypeString($v);
+		else
+			return self::_bugTypeString(null, $exoticType);
+		
 		if(in_array($type, array('unknown', 'NULL', 'resource', 'array')))
 			$out .= '';
 		elseif($type == 'object') {
@@ -296,22 +317,25 @@ class D {
 	 * Generates a variable's formatted type string
 	 * 
 	 * @param mixed $var
+	 * @param string $exoticType
 	 * 
 	 * @return string
 	 */
-	protected static function _bugTypeString($var) {
-		$type = gettype($var);
+	protected static function _bugTypeString($var, $exoticType = null) {
+		$type = $exoticType === null ? gettype($var) : $exoticType;
 		$out = '(' . self::_emphasize($type, 'type');
-		if($type == 'resource')
-			$out .= ' ' . get_resource_type($var);
-		elseif($type == 'array')
-			$out .= ' ' . sizeof($var);
-		elseif($type == 'object') {
-			$class = get_class($var);
-			$out .= ' ' . self::_emphasize($class, 'importantName');
+		if($exoticType == null) {
+			if($type == 'resource')
+				$out .= ' ' . get_resource_type($var);
+			elseif($type == 'array')
+				$out .= ' ' . sizeof($var);
+			elseif($type == 'object') {
+				$class = get_class($var);
+				$out .= ' ' . self::_emphasize($class, 'importantName');
+			}
+			elseif($type == 'string')
+				$out .= ' ' . strlen($var);
 		}
-		elseif($type == 'string')
-			$out .= ' ' . strlen($var);
 		
 		$out .= ') ';
 		
