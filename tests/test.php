@@ -65,6 +65,7 @@ class B extends stdClass {
 class C extends B {
 	public $a = 'test';
 	public $b = [[1, 2, 3, 4], 2, 3, 4];
+	public static $c = 42;
 	
 	const C = 42;
 	

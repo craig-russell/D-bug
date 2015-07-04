@@ -153,92 +153,9 @@ class D {
 		else if($type == 'object') {
 			$class = get_class($var);
 			$reflectionClass = new ReflectionClass($class);
+			
 			echo self::_bugShort($var), "\n\n";
-			
-			$ancestors = array($reflectionClass);
-			if(get_parent_class($class)) {
-				echo "\n", self::_emphasize('Extends:', 'heading'), "\n";
-				$ancestorClass = $class;
-				while(true) {
-					$ancestorClass = get_parent_class($ancestorClass);
-					if($ancestorClass) {
-						$ancestor = new ReflectionClass($ancestorClass);
-						$ancestors[] = $ancestor;
-						echo "\t", self::_emphasize($ancestorClass, 'importantName'), "\n\t\t", self::_bugDeclaration($ancestor), "\n";
-					}
-					else {
-						break;
-					}
-				}
-			}
-			
-			$implements = class_implements($class);
-			if($implements) {
-				echo "\n", self::_emphasize('Implements:', 'heading'), "\n";
-				foreach($implements as $implementedClass) {
-					echo "\t", self::_emphasize($implementedClass, 'importantName'), "\n\t\t", self::_bugDeclaration(new ReflectionClass($implementedClass)), "\n";
-				}
-			}
-			
-			//output a list of constants
-			$constants = $reflectionClass->getConstants();
-			if($constants) {
-			echo "\n", self::_emphasize('Constants:', 'heading'), "\n";
-				foreach($constants as $k => $v) {
-					echo "\t", self::_emphasize($k, 'importantName'), ' = ', self::_bugShort($v, 1), "\n";
-				}
-			}
-			
-			//output a list of properties
-			$properties = $reflectionClass->getProperties();
-			if($properties) {
-				echo "\n", self::_emphasize('Properties:', 'heading'), "\n";
-				foreach($properties as $property) {
-					$property->setAccessible(true);
-					$k = $property->getName();
-					$v = $property->getValue($var);
-					
-					echo "\t", self::_emphasize(self::_getVisibility($property), 'visibility'), ' ';
-					if($property->isStatic())
-						echo self::_emphasize('static ', 'static');
-					echo self::_emphasize('$' . $k, 'importantName'), ' = ', self::_bugShort($v, 1), "\n";
-				}
-			}
-			
-			//output a list of methods
-			$methods = $reflectionClass->getMethods();
-			if($methods) {
-				echo "\n", self::_emphasize('Methods:', 'heading'), "\n";
-				foreach($methods as $method) {
-					//get a pretty list of parameters for this method
-					$method->setAccessible(true);
-					$params = $method->getParameters();
-					foreach($params as $k => $v) {
-						$param = preg_replace('/(^Parameter #\d+ \[ | \]$|\v)/S', '', $v);
-						$param = preg_replace('/<(required|optional)> /S', '', $param);
-						if(preg_match('/^([^$]+ )?/S', $param))
-							$param = preg_replace('/^([^$]+ )?(\$.+?)\b/S', self::_emphasize('$1', 'type') . self::_emphasize('$2', 'paramName'), $param);
-						else
-							$param = preg_replace('/^(\$.+?)\b/S', self::_emphasize('$1', 'paramName'), $param);
-						$params[$k] = $param;
-					}
-					
-					echo "\t";
-					$visibility = self::_emphasize(self::_getVisibility($method), 'visibility') . ' ';
-					$static = $method->isStatic() ? self::_emphasize('static ', 'static') : '';
-					echo $visibility, $static, 'function ', self::_emphasize($method->getName(), 'importantName'), '(', implode(', ', $params), ")\n";
-					
-					$methodDeclarations = self::_bugMethodDeclaration($method, $ancestors);
-					foreach($methodDeclarations as $methodDeclaration) {
-						if(sizeof($methodDeclaration) == 3) {
-							echo "\t\t", $methodDeclaration[0], ' : ', $methodDeclaration[1], ' (', self::_emphasize($methodDeclaration[2], 'name'), ")\n";
-						}
-						else {
-							echo "\t\t", $methodDeclaration[0], ' (', self::_emphasize($methodDeclaration[1], 'name'), ")\n";
-						}
-					}
-				}
-			}
+			self::_bugReflectionClass($reflectionClass, $var);
 		}
 		
 		if(self::bugWeb())
@@ -247,6 +164,104 @@ class D {
 		
 		if($exit)
 			exit;
+	}
+	
+	/**
+	 * Dumps a reflection class.
+	 * Optionally accepts the original object.
+	 * 
+	 * @param object $reflectionClass
+	 * @param object $var
+	 */
+	protected static function _bugReflectionClass($reflectionClass, $var = null) {
+		$class = $reflectionClass->getName();
+		$ancestors = array($reflectionClass);
+		if(get_parent_class($class)) {
+			echo "\n", self::_emphasize('Extends:', 'heading'), "\n";
+			$ancestorClass = $class;
+			while(true) {
+				$ancestorClass = get_parent_class($ancestorClass);
+				if($ancestorClass) {
+					$ancestor = new ReflectionClass($ancestorClass);
+					$ancestors[] = $ancestor;
+					echo "\t", self::_emphasize($ancestorClass, 'importantName'), "\n\t\t", self::_bugDeclaration($ancestor), "\n";
+				}
+				else {
+					break;
+				}
+			}
+		}
+		
+		$implements = class_implements($class);
+		if($implements) {
+			echo "\n", self::_emphasize('Implements:', 'heading'), "\n";
+			foreach($implements as $implementedClass) {
+				echo "\t", self::_emphasize($implementedClass, 'importantName'), "\n\t\t", self::_bugDeclaration(new ReflectionClass($implementedClass)), "\n";
+			}
+		}
+		
+		//output a list of constants
+		$constants = $reflectionClass->getConstants();
+		if($constants) {
+		echo "\n", self::_emphasize('Constants:', 'heading'), "\n";
+			foreach($constants as $k => $v) {
+				echo "\t", self::_emphasize($k, 'importantName'), ' = ', self::_bugShort($v, 1), "\n";
+			}
+		}
+		
+		//output a list of properties
+		$properties = $reflectionClass->getProperties();
+		if($properties) {
+			echo "\n", self::_emphasize('Properties:', 'heading'), "\n";
+			foreach($properties as $property) {
+				$property->setAccessible(true);
+				$k = $property->getName();
+				if($var !== null)
+					$v = $property->getValue($var);
+				else
+					$v = $property->getValue();
+				
+				echo "\t", self::_emphasize(self::_getVisibility($property), 'visibility'), ' ';
+				if($property->isStatic())
+					echo self::_emphasize('static ', 'static');
+				echo self::_emphasize('$' . $k, 'importantName'), ' = ', self::_bugShort($v, 1), "\n";
+			}
+		}
+		
+		//output a list of methods
+		$methods = $reflectionClass->getMethods();
+		if($methods) {
+			echo "\n", self::_emphasize('Methods:', 'heading'), "\n";
+			foreach($methods as $method) {
+				//get a pretty list of parameters for this method
+				$method->setAccessible(true);
+				$params = $method->getParameters();
+				foreach($params as $k => $v) {
+					$param = preg_replace('/(^Parameter #\d+ \[ | \]$|\v)/S', '', $v);
+					$param = preg_replace('/<(required|optional)> /S', '', $param);
+					if(preg_match('/^([^$]+ )?/S', $param))
+						$param = preg_replace('/^([^$]+ )?(\$.+?)\b/S', self::_emphasize('$1', 'type') . self::_emphasize('$2', 'paramName'), $param);
+					else
+						$param = preg_replace('/^(\$.+?)\b/S', self::_emphasize('$1', 'paramName'), $param);
+					$params[$k] = $param;
+				}
+				
+				echo "\t";
+				$visibility = self::_emphasize(self::_getVisibility($method), 'visibility') . ' ';
+				$static = $method->isStatic() ? self::_emphasize('static ', 'static') : '';
+				echo $visibility, $static, 'function ', self::_emphasize($method->getName(), 'importantName'), '(', implode(', ', $params), ")\n";
+				
+				$methodDeclarations = self::_bugMethodDeclaration($method, $ancestors);
+				foreach($methodDeclarations as $methodDeclaration) {
+					if(sizeof($methodDeclaration) == 3) {
+						echo "\t\t", $methodDeclaration[0], ' : ', $methodDeclaration[1], ' (', self::_emphasize($methodDeclaration[2], 'name'), ")\n";
+					}
+					else {
+						echo "\t\t", $methodDeclaration[0], ' (', self::_emphasize($methodDeclaration[1], 'name'), ")\n";
+					}
+				}
+			}
+		}
 	}
 	
 	/**
