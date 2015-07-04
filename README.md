@@ -31,7 +31,7 @@ Debug a variable *recursively*
 D::bugR($yourVariable);
 ```
 
-Dump a class
+Debug a class
 
 ```php
 D::bugClass('YourClass');
