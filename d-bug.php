@@ -173,40 +173,21 @@ class D {
 	 * $param bool $exit
 	 */
 	public static function bugClass($class, $exit = true) {
+		if(!self::bugMode())
+			return;
+		
+		if(self::bugWeb())
+			echo '<pre style="', self::STYLE, '">', "\n";
+		
 		echo self::_bugShort(null, 0, 'class'), "\n\n";
 		$reflectionClass = new ReflectionClass($class);
 		self::_bugReflectionClass($reflectionClass);
 		
+		if(self::bugWeb())
+			echo '</pre>', "\n";
+		
 		if($exit)
 			exit;
-	}
-	
-	/**
-	 * Gets a list of ancestors for a class
-	 * 
-	 * @param object $reflectionClass
-	 * 
-	 * @return array
-	 */
-	protected static function _getAncestors($reflectionClass) {
-		$class = $reflectionClass->name;
-		$ancestors = array($reflectionClass);
-		
-		if(get_parent_class($class)) {
-			$ancestorClass = $class;
-			while(true) {
-				$ancestorClass = get_parent_class($ancestorClass);
-				if($ancestorClass) {
-					$ancestor = new ReflectionClass($ancestorClass);
-					$ancestors[] = $ancestor;
-				}
-				else {
-					break;
-				}
-			}
-		}
-		
-		return $ancestors;
 	}
 	
 	/**
@@ -331,6 +312,34 @@ class D {
 			$out .= self::_emphasize($v, 'value');
 		
 		return $out;
+	}
+	
+	/**
+	 * Gets a list of ancestors for a class
+	 * 
+	 * @param object $reflectionClass
+	 * 
+	 * @return array
+	 */
+	protected static function _getAncestors($reflectionClass) {
+		$class = $reflectionClass->name;
+		$ancestors = array($reflectionClass);
+		
+		if(get_parent_class($class)) {
+			$ancestorClass = $class;
+			while(true) {
+				$ancestorClass = get_parent_class($ancestorClass);
+				if($ancestorClass) {
+					$ancestor = new ReflectionClass($ancestorClass);
+					$ancestors[] = $ancestor;
+				}
+				else {
+					break;
+				}
+			}
+		}
+		
+		return $ancestors;
 	}
 	
 	/**
