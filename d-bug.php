@@ -230,6 +230,7 @@ class D {
 		if($properties) {
 			echo "\n", self::_emphasize('Properties:', 'heading'), "\n";
 			foreach($properties as $property) {
+				$visibility = self::_getVisibility($property);
 				$property->setAccessible(true);
 				$k = $property->getName();
 				if($var !== null)
@@ -237,10 +238,13 @@ class D {
 				else
 					$v = $property->getValue();
 				
-				echo "\t", self::_emphasize(self::_getVisibility($property), 'visibility'), ' ';
+				echo "\t", self::_emphasize($visibility, 'visibility'), ' ';
 				if($property->isStatic())
 					echo self::_emphasize('static ', 'static');
 				echo self::_emphasize('$' . $k, 'importantName'), ' = ', self::_bugShort($v, 1), "\n";
+				if($visibility != 'public') {
+					$property->setAccessible(false);
+				}
 			}
 		}
 		
@@ -250,6 +254,7 @@ class D {
 			echo "\n", self::_emphasize('Methods:', 'heading'), "\n";
 			foreach($methods as $method) {
 				//get a pretty list of parameters for this method
+				$visibility = self::_getVisibility($method);
 				$method->setAccessible(true);
 				$params = $method->getParameters();
 				foreach($params as $k => $v) {
@@ -263,9 +268,9 @@ class D {
 				}
 				
 				echo "\t";
-				$visibility = self::_emphasize(self::_getVisibility($method), 'visibility') . ' ';
+				$formattedVisibility = self::_emphasize($visibility, 'visibility') . ' ';
 				$static = $method->isStatic() ? self::_emphasize('static ', 'static') : '';
-				echo $visibility, $static, 'function ', self::_emphasize($method->getName(), 'importantName'), '(', implode(', ', $params), ")\n";
+				echo $formattedVisibility, $static, 'function ', self::_emphasize($method->getName(), 'importantName'), '(', implode(', ', $params), ")\n";
 				
 				$methodDeclarations = self::_bugMethodDeclaration($method, $ancestors);
 				foreach($methodDeclarations as $methodDeclaration) {
@@ -275,6 +280,10 @@ class D {
 					else {
 						echo "\t\t", $methodDeclaration[0], ' (', self::_emphasize($methodDeclaration[1], 'name'), ")\n";
 					}
+				}
+				
+				if($visibility != 'public') {
+					$method->setAccessible(false);
 				}
 			}
 		}
