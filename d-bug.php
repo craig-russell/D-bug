@@ -179,7 +179,7 @@ class D {
 		if(self::bugWeb())
 			echo '<pre style="', self::STYLE, '">', "\n";
 		
-		echo self::_bugShort(null, 0, 'class'), "\n\n";
+		echo self::_bugShort($class, 0, 'class'), "\n\n";
 		$reflectionClass = new ReflectionClass($class);
 		self::_bugReflectionClass($reflectionClass);
 		
@@ -305,7 +305,7 @@ class D {
 		if($exoticType === null)
 			$out = self::_bugTypeString($v);
 		else
-			return self::_bugTypeString(null, $exoticType);
+			return self::_bugTypeString($v, $exoticType);
 		
 		if(in_array($type, array('unknown', 'NULL', 'resource', 'array')))
 			$out .= '';
@@ -373,6 +373,9 @@ class D {
 			}
 			elseif($type == 'string')
 				$out .= ' ' . strlen($var);
+		}
+		else if($exoticType == 'class') {
+			$out .= ' ' . self::_emphasize($var, 'importantName');
 		}
 		
 		$out .= ') ';
