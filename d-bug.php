@@ -182,6 +182,34 @@ class D {
 	}
 	
 	/**
+	 * Gets a list of ancestors for a class
+	 * 
+	 * @param object $reflectionClass
+	 * 
+	 * @return array
+	 */
+	protected static function _getAncestors($reflectionClass) {
+		$class = $reflectionClass->name;
+		$ancestors = array($reflectionClass);
+		
+		if(get_parent_class($class)) {
+			$ancestorClass = $class;
+			while(true) {
+				$ancestorClass = get_parent_class($ancestorClass);
+				if($ancestorClass) {
+					$ancestor = new ReflectionClass($ancestorClass);
+					$ancestors[] = $ancestor;
+				}
+				else {
+					break;
+				}
+			}
+		}
+		
+		return $ancestors;
+	}
+	
+	/**
 	 * Dumps a reflection class.
 	 * Optionally accepts the original object.
 	 * 
@@ -189,21 +217,13 @@ class D {
 	 * @param object $var
 	 */
 	protected static function _bugReflectionClass($reflectionClass, $var = null) {
-		$class = $reflectionClass->getName();
-		$ancestors = array($reflectionClass);
-		if(get_parent_class($class)) {
+		$class = $reflectionClass->name;
+		$ancestors = self::_getAncestors($reflectionClass);
+		if(sizeof($ancestors) > 1) {
 			echo "\n", self::_emphasize('Extends:', 'heading'), "\n";
-			$ancestorClass = $class;
-			while(true) {
-				$ancestorClass = get_parent_class($ancestorClass);
-				if($ancestorClass) {
-					$ancestor = new ReflectionClass($ancestorClass);
-					$ancestors[] = $ancestor;
-					echo "\t", self::_emphasize($ancestorClass, 'importantName'), "\n\t\t", self::_bugDeclaration($ancestor), "\n";
-				}
-				else {
-					break;
-				}
+			for($i = 1; $i < sizeof($ancestors); ++$i) {
+				$ancestor = $ancestors[$i];
+				echo "\t", self::_emphasize($ancestor->name, 'importantName'), "\n\t\t", self::_bugDeclaration($ancestor), "\n";
 			}
 		}
 		
