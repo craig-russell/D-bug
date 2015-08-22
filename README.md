@@ -37,6 +37,12 @@ Debug a class
 D::bugClass('YourClass');
 ```
 
+View a string's ASCII codes (useful when searching for hidden characters)
+
+```php
+D::bugString('Your string here');
+```
+
 Generate a backtrace
 
 ```php
