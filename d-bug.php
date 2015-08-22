@@ -66,8 +66,7 @@ class D {
 		if(!self::bugMode())
 			return;
 		
-		if(self::bugWeb())
-			echo '<pre style="', self::STYLE, '">';
+		self::_header();
 		
 		if($dump)
 			var_dump($var);
@@ -132,9 +131,7 @@ class D {
 		if(!self::bugMode())
 			return;
 		
-		if(self::bugWeb())
-			echo '<pre style="', self::STYLE, '">', "\n";
-		
+		self::_header();
 		$type = gettype($var);
 		if(in_array($type, array('unknown', 'NULL'))) {
 			echo self::_bugTypeString($var), "\n";
@@ -176,9 +173,7 @@ class D {
 		if(!self::bugMode())
 			return;
 		
-		if(self::bugWeb())
-			echo '<pre style="', self::STYLE, '">', "\n";
-		
+		self::_header();
 		echo self::_bugShort($class, 0, 'class'), "\n\n";
 		$reflectionClass = new ReflectionClass($class);
 		self::_bugReflectionClass($reflectionClass);
@@ -201,10 +196,8 @@ class D {
 		if(!self::bugMode())
 			return;
 		
-		if(self::bugWeb())
-			echo '<pre style="', self::STYLE, '">', "\n";
-		
 		ob_start();
+		self::_header();
 		$stop = strlen($string);
 		for($i = 0; $i != $stop; ++$i) {
 			$character = $string[$i];
@@ -513,5 +506,13 @@ class D {
 		$style = isset($styles[$name]) ? $styles[$name] : $styles['default'];
 		
 		return self::bugWeb() ? $style[1] : $style[0];
+	}
+	
+	/**
+	 * Output the standard header
+	 */
+	protected function _header() {
+		if(self::bugWeb())
+			echo '<pre style="', self::STYLE, '">', "\n";
 	}
 }
