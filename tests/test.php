@@ -43,6 +43,14 @@ function staticClassTest() {
 	return ob_get_clean();
 }
 
+function stringTest() {
+	$string = 'Where is the con' . chr(8) . 'trol character?';
+	ob_start();
+	D::bugString($string, false);
+	
+	return ob_get_clean();
+}
+
 class A {}
 
 class B extends stdClass {
@@ -125,6 +133,7 @@ $test[] = array(new E(), true);
 $test[] = array(new F(), true);
 $test[] = array(backtraceTest(), false);
 $test[] = array(staticClassTest(), false);
+$test[] = array(stringTest(), false);
 
 foreach($test as $k => $t) {
 	echo "Test #", $k, "\n\n";

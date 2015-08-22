@@ -170,7 +170,7 @@ class D {
 	 * Dumps information about a class without instantiating it.
 	 * 
 	 * @param string $class
-	 * $param bool $exit
+	 * @param bool $exit
 	 */
 	public static function bugClass($class, $exit = true) {
 		if(!self::bugMode())
@@ -182,6 +182,36 @@ class D {
 		echo self::_bugShort($class, 0, 'class'), "\n\n";
 		$reflectionClass = new ReflectionClass($class);
 		self::_bugReflectionClass($reflectionClass);
+		
+		if(self::bugWeb())
+			echo '</pre>', "\n";
+		
+		if($exit)
+			exit;
+	}
+	
+	/**
+	 * Outputs a string's ASCII codes.
+	 * Highlights control characters.
+	 * 
+	 * @param string $string
+	 * @param bool $exit
+	 */
+	public static function bugString($string, $exit = true) {
+		if(!self::bugMode())
+			return;
+		
+		if(self::bugWeb())
+			echo '<pre style="', self::STYLE, '">', "\n";
+		
+		ob_start();
+		$stop = strlen($string);
+		for($i = 0; $i != $stop; ++$i) {
+			$character = $string[$i];
+			$code = ord($character);
+			$isControlCharacter = $code < 32 || $code == 127;
+			echo self::_emphasize(str_pad($code, 3, '0', STR_PAD_LEFT), $isControlCharacter ? 'controlChar' : 'default'), ' ';
+		}
 		
 		if(self::bugWeb())
 			echo '</pre>', "\n";
@@ -476,7 +506,8 @@ class D {
 			'static'		=> array("\033[1;31m", 'color: firebrick;'),
 			'paramName'		=> array("\033[0;32m", 'color: darkgreen;'),
 			'value'			=> array("\033[1;37m", ''),
-			'heading'		=> array("\033[1;37m", 'font-weight: bold;')
+			'heading'		=> array("\033[1;37m", 'font-weight: bold;'),
+			'controlChar'	=> array("\033[1;31m", 'color: firebrick;')
 		);
 		
 		$style = isset($styles[$name]) ? $styles[$name] : $styles['default'];
