@@ -49,6 +49,15 @@ Generate a backtrace
 D::bugBacktrace();
 ```
 
+Manually grant or revoke debugging privileges
+
+```php
+if($logic)
+	D::authorize();
+else
+	D::deauthorize();
+```
+
 Run D-bug on itself to learn more about its capabilities
 
 ```php
