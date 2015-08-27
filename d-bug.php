@@ -37,6 +37,11 @@ class D {
 	 * @return bool
 	 */
 	public static function bugMode() {
+		$authorized = self::_get('authorized');
+		if(is_bool($authorized)) {
+			return $authorized;
+		}
+		
 		if(!self::bugWeb())
 			return true;
 		
@@ -44,6 +49,21 @@ class D {
 		$ip = isset($headers['X-Forwarded-For']) ? $headers['X-Forwarded-For'] : $_SERVER['REMOTE_ADDR'];
 		
 		return $ip == '127.0.0.1' || preg_match('/^(192\.168|172\.16|10)\./S', $ip);
+	}
+	
+	/**
+	 * Override internal checks, and authorize client for debugging
+	 * Use with caution!
+	 */
+	public static function authorize() {
+		self::_set('authorized', true);
+	}
+	
+	/**
+	 * Override internal checks, and deauthorize client for debugging
+	 */
+	public static function deauthorize() {
+		self::_set('authorized', false);
 	}
 	
 	/**
@@ -514,5 +534,41 @@ class D {
 	protected function _header() {
 		if(self::bugWeb())
 			echo '<pre style="', self::STYLE, '">', "\n";
+	}
+	
+	/**
+	 * Stores a key/value pair in D-Bug's registry
+	 * 
+	 * @param string|int $key
+	 * @param mixed $value
+	 * 
+	 * @return bool
+	 */
+	protected static function _set($key, $value) {
+		global $_DBugStorage;
+		
+		if(!isset($_DBugStorage)) {
+			$_DBugStorage = array();
+		}
+		if(!is_string($key) && !is_integer($key)) {
+			return false;
+		}
+		$_DBugStorage[$key] = $value;
+		
+		return true;
+	}
+	
+	/**
+	 * Fetches a value from D-bug's registry
+	 * Returns null if the key doesn't exist
+	 * 
+	 * @param string|int $key
+	 * 
+	 * @return mixed
+	 */
+	protected static function _get($key) {
+		global $_DBugStorage;
+		
+		return isset($_DBugStorage[$key]) ? $_DBugStorage[$key] : null;
 	}
 }
